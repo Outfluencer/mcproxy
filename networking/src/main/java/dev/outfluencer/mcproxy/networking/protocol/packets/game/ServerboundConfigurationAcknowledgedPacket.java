@@ -1,0 +1,21 @@
+package dev.outfluencer.mcproxy.networking.protocol.packets.game;
+
+import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import io.netty.buffer.ByteBuf;
+
+public class ServerboundConfigurationAcknowledgedPacket extends Packet<ServerboundGamePacketListener> {
+    @Override
+    public void read(ByteBuf byteBuf, int version) {
+
+    }
+
+    @Override
+    public void write(ByteBuf byteBuf, int version) {
+
+    }
+
+    @Override
+    public boolean handle(ServerboundGamePacketListener listener) {
+        return listener.handle(this);
+    }
+}

@@ -1,0 +1,158 @@
+package dev.outfluencer.mcproxy.networking.protocol.packets;
+
+import com.google.gson.JsonElement;
+import dev.outfluencer.mcproxy.networking.Property;
+import dev.outfluencer.mcproxy.networking.Util;
+import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.handler.codec.DecoderException;
+import net.lenni0451.mcstructs.nbt.NbtTag;
+import net.lenni0451.mcstructs.nbt.NbtType;
+import net.lenni0451.mcstructs.nbt.io.NbtReadTracker;
+import net.lenni0451.mcstructs.nbt.io.impl.v1_12.NbtReader_v1_12;
+import net.lenni0451.mcstructs.nbt.io.impl.v1_12.NbtWriter_v1_12;
+import net.lenni0451.mcstructs.text.TextComponent;
+import net.lenni0451.mcstructs.text.serializer.TextComponentCodec;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
+public abstract class Packet<T extends PacketListener> {
+
+    public static int readVarInt(ByteBuf input) {
+        return readVarInt(input, 5);
+    }
+
+    public static String readString(ByteBuf input) {
+        int len = readVarInt(input);
+        return input.readString(len, StandardCharsets.UTF_8);
+    }
+
+    public static void writeString(String string, ByteBuf output) {
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+        writeVarInt(bytes.length, output);
+        output.writeBytes(bytes);
+    }
+
+    public static int readVarInt(ByteBuf input, int maxBytes) {
+        int out = 0;
+        int bytes = 0;
+
+        byte in;
+        do {
+            in = input.readByte();
+            out |= (in & 127) << bytes++ * 7;
+            if (bytes > maxBytes) {
+                throw new DecoderException("VarInt too big");
+            }
+        } while ((in & 128) == 128);
+
+        return out;
+    }
+
+    public static void writeVarInt(int value, final ByteBuf output) {
+        while ((value & -128) != 0) {
+            output.writeByte(value & 127 | 128);
+            value >>>= 7;
+        }
+        output.writeByte(value);
+    }
+
+    public static void writeUUID(UUID value, ByteBuf output) {
+        output.writeLong(value.getMostSignificantBits());
+        output.writeLong(value.getLeastSignificantBits());
+    }
+
+    public static UUID readUUID(ByteBuf input) {
+        return new UUID(input.readLong(), input.readLong());
+    }
+
+    public static void writeProperties(Property[] properties, ByteBuf buf) {
+        if (properties == null) {
+            writeVarInt(0, buf);
+            return;
+        }
+        writeVarInt(properties.length, buf);
+        for (Property prop : properties) {
+            writeString(prop.getName(), buf);
+            writeString(prop.getValue(), buf);
+            if (prop.getSignature() != null) {
+                buf.writeBoolean(true);
+                writeString(prop.getSignature(), buf);
+            } else {
+                buf.writeBoolean(false);
+            }
+        }
+    }
+
+    public static Property[] readProperties(ByteBuf buf) {
+        Property[] properties = new Property[readVarInt(buf)];
+        for (int j = 0; j < properties.length; j++) {
+            String name = readString(buf);
+            String value = readString(buf);
+            if (buf.readBoolean()) {
+                properties[j] = new Property(name, value, readString(buf));
+            } else {
+                properties[j] = new Property(name, value);
+            }
+        }
+        return properties;
+    }
+
+    public static TextComponent readComponent(ByteBuf byteBuf, int version) {
+        TextComponentCodec codec = Util.textComponentCodecByVersion(version);
+        return codec.deserialize(readTag(byteBuf, version));
+    }
+
+    public static void writeBaseComponent(TextComponent message, ByteBuf buf, int version)
+    {
+        TextComponentCodec codec = Util.textComponentCodecByVersion(version);
+        writeTag( codec.serializeNbtTree(message), buf, version );
+    }
+
+    public static NbtTag readTag(ByteBuf input, int protocolVersion) {
+        return readTag(input, protocolVersion, new NbtReadTracker(1 << 21));
+    }
+
+    public static NbtTag readTag(ByteBuf input, int protocolVersion, NbtReadTracker limiter) {
+        DataInputStream in = new DataInputStream(new ByteBufInputStream(input));
+        try {
+            byte type = in.readByte();
+            if (type == 0) {
+                return null;
+            } else {
+                return new NbtReader_v1_12().read(NbtType.byId(type), in, limiter);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Exception reading tag", ex);
+        }
+    }
+
+
+
+
+    public static void writeTag(NbtTag tag, ByteBuf output, int protocolVersion)
+    {
+        DataOutputStream out = new DataOutputStream( new ByteBufOutputStream( output ) );
+        try
+        {
+            out.writeByte( tag.getNbtType().getId() );
+            new NbtWriter_v1_12().write(out, tag);
+        } catch ( IOException ex )
+        {
+            throw new RuntimeException( "Exception writing tag", ex );
+        }
+    }
+
+
+    public abstract void read(ByteBuf byteBuf, int version);
+
+    public abstract void write(ByteBuf byteBuf, int version);
+
+    public abstract boolean handle(T listener);
+}
