@@ -57,7 +57,8 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
     }
 
     @Override
-    public boolean handle(ClientboundLoginCompressionPacket clientboundLoginCompressionPacket) {
+    public boolean handle(ClientboundLoginCompressionPacket packet) {
+        backendHandle.setCompression(packet.getThreshold());
         return false;
     }
 

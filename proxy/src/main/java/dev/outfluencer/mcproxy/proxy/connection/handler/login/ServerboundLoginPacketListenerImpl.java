@@ -20,14 +20,18 @@ public class ServerboundLoginPacketListenerImpl implements ServerboundLoginPacke
     @Override
     public boolean handle(ServerboundHelloPacket packet) {
         player = new PlayerImpl(handle, packet.getName(), packet.getUuid());
-        setCompression(256);
-        player.fallback();
+        finishPlayerLogin();
         return false;
     }
 
     public void setCompression(int threshold) {
         player.sendPacket(new ClientboundLoginCompressionPacket(threshold));
         handle.setCompression(threshold);
+    }
+
+    public void finishPlayerLogin() {
+        setCompression(256);
+        player.fallback();
     }
 
     @Override
