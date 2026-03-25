@@ -39,7 +39,7 @@ public class ServerboundStatusPacketListenerImpl implements ServerboundStatusPac
             throw new IllegalStateException("Unexpected ServerboundStatusRequestPacket");
         }
         state = State.RECEIVED_PING;
-        handle.secureClose(new ClientboundPongResponsePacket(packet.getPing()));
+        handle.close(new ClientboundPongResponsePacket(packet.getPing()));
         return false;
     }
 

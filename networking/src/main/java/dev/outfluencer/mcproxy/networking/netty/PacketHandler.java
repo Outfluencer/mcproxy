@@ -21,6 +21,7 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         packetHandler.onException(cause);
+        ctx.close();
     }
 
     @Override

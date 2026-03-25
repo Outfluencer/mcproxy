@@ -2,6 +2,9 @@ package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +29,7 @@ public class PlayerImpl implements Player {
 
     @Override
     public void disconnect(String message) {
-        connection.secureClose(null);
+        connection.close(null);
     }
 
     @Override
@@ -38,10 +41,41 @@ public class PlayerImpl implements Player {
         new BackendConnector(this, address).connect();
     }
 
+    public void fallback() {
+        connect(new InetSocketAddress("127.0.0.1", 25566));
+    }
+
     private boolean bundling;
 
     public void toggleBundle() {
         bundling = !bundling;
     }
 
+    public boolean isConnected() {
+        return !connection.isClosed();
+    }
+
+    public void sendPacket(Packet<?> packet) {
+        connection.sendPacket(packet);
+    }
+
+    public void sendDecodedPacket(DecodedPacket decodedPacket) {
+        connection.sendDecodedPacket(decodedPacket);
+    }
+
+    public void setDecoderProtocol(Protocol protocol) {
+        connection.setDecoderProtocol(protocol);
+    }
+
+    public void setEncoderProtocol(Protocol protocol) {
+        connection.setEncoderProtocol(protocol);
+    }
+
+    public Protocol getDecoderProtocol() {
+        return connection.getDecoderProtocol();
+    }
+
+    public Protocol getEncoderProtocol() {
+        return connection.getEncoderProtocol();
+    }
 }

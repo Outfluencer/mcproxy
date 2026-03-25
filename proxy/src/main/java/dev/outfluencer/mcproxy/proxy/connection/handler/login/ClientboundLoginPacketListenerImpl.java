@@ -34,38 +34,49 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
 
     @Override
     public boolean handle(ClientboundLoginDisconnectPacket packet) {
-        backendHandle.secureClose(null);
+        backendHandle.close(null);
         return false;
     }
 
     @Override
     public boolean handle(ClientboundLoginFinishedPacket packet) {
-        if (player.getServer() != null && !player.getServer().getConnection().isClosed()) {
-            player.getServer().getConnection().secureCloseAndThen(null, () -> updatePlayerServer(packet));
-        } else {
-            updatePlayerServer(packet);
+        ServerImpl server = player.getServer();
+        if (server != null) {
+            if (server.isConnected()) {
+                server.disconnect();
+                server.getConnection()
+                    .getChannel()
+                    .closeFuture()
+                    .addListener(_ -> updatePlayerServer(packet));
+                return false;
+            }
         }
+        updatePlayerServer(packet);
         return false;
     }
 
     public void updatePlayerServer(ClientboundLoginFinishedPacket packet) {
-        ServerImpl server = new ServerImpl(player, backendHandle);
-        backendHandle.setDecoderProtocol(Protocol.CONFIG);
-        backendHandle.setPacketListener(new ClientboundConfigurationPacketListenerImpl(server));
-        player.setServer(server);
+        if (!player.isConnected()) {
+            return;
+        }
 
-        Protocol protocol = player.getConnection().getEncoderProtocol();
+        ServerImpl server = new ServerImpl(player, backendHandle);
+        player.setServer(server);
+        server.setDecoderProtocol(Protocol.CONFIG);
+        backendHandle.setPacketListener(new ClientboundConfigurationPacketListenerImpl(server));
+
+        Protocol protocol = player.getEncoderProtocol();
         if (protocol == Protocol.LOGIN) {
-            player.getConnection().sendPacket(packet);
+            player.sendPacket(packet);
         } else if (protocol == Protocol.GAME) {
 
             if (player.isBundling()) {
                 player.toggleBundle();
-                player.getConnection().sendPacket(new ClientboundBundleDelimiterPacket());
+                player.sendPacket(new ClientboundBundleDelimiterPacket());
             }
 
-            player.getConnection().sendPacket(new ClientboundStartConfigurationPacket());
-            player.getConnection().setEncoderProtocol(Protocol.CONFIG);
+            player.sendPacket(new ClientboundStartConfigurationPacket());
+            player.setEncoderProtocol(Protocol.CONFIG);
         } else {
             throw new UnsupportedOperationException();
         }
@@ -74,7 +85,7 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
 
     @Override
     public void onException(Throwable throwable) {
-        backendHandle.secureClose(null);
+        backendHandle.close(null);
     }
 
 

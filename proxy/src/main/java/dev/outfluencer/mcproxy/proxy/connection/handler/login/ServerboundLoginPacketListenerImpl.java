@@ -6,7 +6,6 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHell
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
-import dev.outfluencer.mcproxy.proxy.connection.BackendConnector;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerboundConfigurationPacketListenerImpl;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +30,8 @@ public class ServerboundLoginPacketListenerImpl implements ServerboundLoginPacke
         handle.setProtocol(Protocol.CONFIG);
         handle.setPacketListener(new ServerboundConfigurationPacketListenerImpl(player));
 
-        player.getServer().getConnection().sendPacket(packet);
-        player.getServer().getConnection().setEncoderProtocol(Protocol.CONFIG);
+        player.getServer().sendPacket(packet);
+        player.getServer().setEncoderProtocol(Protocol.CONFIG);
         return false;
     }
 

@@ -9,13 +9,10 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.util.AttributeKey;
+import io.netty.channel.ChannelFutureListener;
 import lombok.Getter;
 
 public final class ConnectionHandle {
-
-    public static final AttributeKey<ConnectionHandle> ATTRIBUTE_KEY = AttributeKey.newInstance("ConnectionHandle");
 
     @Getter
     private int protocolVersion;
@@ -30,6 +27,7 @@ public final class ConnectionHandle {
 
 
     public void setProtocol(Protocol protocol) {
+        assert channel.eventLoop().inEventLoop();
         setDecoderProtocol(protocol);
         setEncoderProtocol(protocol);
     }
@@ -65,23 +63,14 @@ public final class ConnectionHandle {
     private boolean closed;
 
     public void markClosed() {
+        assert channel.eventLoop().inEventLoop();
         this.closed = true;
     }
-
 
     public ConnectionHandle(Channel channel, boolean server) {
         assert channel.eventLoop().inEventLoop();
         this.channel = channel;
-        this.channel.attr(ATTRIBUTE_KEY).set(this);
         this.server = server;
-    }
-
-    public void sendPackets(Packet<?>... packets) {
-        assert channel.eventLoop().inEventLoop();
-        for (Packet<?> packet : packets) {
-            channel.write(packet, channel.voidPromise());
-        }
-        channel.flush();
     }
 
     public void sendPacket(Packet<?> packet) {
@@ -90,46 +79,22 @@ public final class ConnectionHandle {
     }
 
     public void sendDecodedPacket(DecodedPacket decodedPacket) {
+        assert channel.eventLoop().inEventLoop();
+        if (closed || decodedPacket.protocol() != getEncoderProtocol()) {
+            return;
+        }
         channel.writeAndFlush(decodedPacket.byteBuf().retain(), channel.voidPromise());
     }
 
-    public ChannelFuture sendPacketAndAwait(Packet<?> packet) {
+    public void close(Packet<?> packet) {
         assert channel.eventLoop().inEventLoop();
-        return channel.writeAndFlush(packet);
-    }
-
-    public void secureClose(Packet<?> packet) {
-        assert channel.eventLoop().inEventLoop();
+        // if the input is already shut down cancel here.
         if (closed) {
             return;
         }
-        setClosing();
-        channel.writeAndFlush(packet == null ? Unpooled.EMPTY_BUFFER : packet).addListener(_ -> channel.close());
-    }
-
-    public void secureCloseAndThen(Packet<?> packet, Runnable runnable) {
-        assert channel.eventLoop().inEventLoop();
-        if (closed) {
-            return;
-        }
-        setClosing();
-        channel.writeAndFlush(packet == null ? Unpooled.EMPTY_BUFFER : packet).addListener(_ -> {
-            channel.close().addListener(_ -> runnable.run());
-
-        });
-    }
-
-    public void forceClose(Packet<?> packet) {
-        assert channel.eventLoop().inEventLoop();
-        if (closed) {
-            return;
-        }
-        setClosing();
-        if (packet != null) {
-            channel.write(packet, channel.voidPromise());
-        }
-        channel.flush();
-        channel.close();
+        channel.config().setAutoRead(false);
+        channel.writeAndFlush(packet == null ? Unpooled.EMPTY_BUFFER : packet).addListener(ChannelFutureListener.CLOSE);
+        closed = true;
     }
 
     public void setAutoRead(boolean autoRead) {
@@ -140,13 +105,4 @@ public final class ConnectionHandle {
         channel.config().setAutoRead(autoRead);
     }
 
-    public void setClosing() {
-        assert channel.eventLoop().inEventLoop();
-        //assert !closing : "closing called twice";
-        if (closed) {
-            return;
-        }
-        closed = true;
-        channel.config().setAutoRead(false);
-    }
 }

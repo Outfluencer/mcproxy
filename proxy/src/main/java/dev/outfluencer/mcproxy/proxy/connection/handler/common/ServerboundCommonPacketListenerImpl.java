@@ -1,11 +1,39 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.common;
 
+import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonPacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundCommonPacketListener;
+import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
+import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 
-public class ServerboundCommonPacketListenerImpl implements ClientboundCommonPacketListener {
+public class ServerboundCommonPacketListenerImpl implements ServerboundCommonPacketListener {
+
+    protected final PlayerImpl player;
+    protected final ConnectionHandle playerConnection;
+
+    public ServerboundCommonPacketListenerImpl(PlayerImpl player) {
+        this.player = player;
+        this.playerConnection = player.getConnection();
+    }
+
+    public ServerImpl getServer() {
+        return player.getServer();
+    }
+
     @Override
-    public boolean handle(ClientboundCommonDisconnectPacket packet) {
-        return false;
+    public void handle(DecodedPacket decodedPacket) {
+        ServerImpl server = getServer();
+        if (!server.isConnected()) {
+            return;
+        }
+        server.sendDecodedPacket(decodedPacket);
+    }
+
+    @Override
+    public void onDisconnect() {
+        // disconnect the backend server
+        getServer().disconnect();
     }
 }
