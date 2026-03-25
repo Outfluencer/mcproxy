@@ -1,4 +1,4 @@
-package dev.outfluencer.mcproxy.networking.netty;
+package dev.outfluencer.mcproxy.networking.netty.handler;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;

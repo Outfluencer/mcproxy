@@ -1,5 +1,6 @@
-package dev.outfluencer.mcproxy.networking.netty;
+package dev.outfluencer.mcproxy.networking.netty.handler;
 
+import dev.outfluencer.mcproxy.networking.netty.ClearSignal;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -14,18 +15,7 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
     {
-        // If we decode an invalid packet and an exception is thrown (thus triggering a close of the connection),
-        // the Netty ByteToMessageDecoder will continue to frame more packets and potentially call fireChannelRead()
-        // on them, likely with more invalid packets. Therefore, check if the connection is no longer active and if so
-        // sliently discard the packet.
-        if ( !ctx.channel().isActive() )
-        {
-            in.skipBytes( in.readableBytes() );
-            return;
-        }
-
         in.markReaderIndex();
-
         final byte[] buf = new byte[ 3 ];
         for ( int i = 0; i < buf.length; i++ )
         {
@@ -47,7 +37,6 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder
                 if ( in.readableBytes() < length )
                 {
                     in.resetReaderIndex();
-                    return;
                 } else
                 {
                     if ( in.hasMemoryAddress() )
@@ -59,11 +48,25 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder
                         in.readBytes( dst );
                         out.add( dst );
                     }
-                    return;
                 }
+                return;
             }
         }
 
         throw new CorruptedFrameException( "length wider than 21-bit" );
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt == ClearSignal.INSTANCE) {
+            internalBuffer().clear();
+        }
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
+    protected void decodeLast(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        internalBuffer().clear();
+        super.decodeLast(ctx, in, out);
     }
 }

@@ -5,6 +5,7 @@ import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginPacketListener;
@@ -52,6 +53,11 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
             }
         }
         updatePlayerServer(packet);
+        return false;
+    }
+
+    @Override
+    public boolean handle(ClientboundLoginCompressionPacket clientboundLoginCompressionPacket) {
         return false;
     }
 

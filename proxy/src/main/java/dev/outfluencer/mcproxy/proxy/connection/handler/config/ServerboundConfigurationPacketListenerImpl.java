@@ -20,7 +20,6 @@ public class ServerboundConfigurationPacketListenerImpl extends ServerboundCommo
 
         player.getServer().sendPacket(packet);
         player.getServer().setEncoderProtocol(Protocol.GAME);
-
         return false;
     }
 

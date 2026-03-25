@@ -1,8 +1,12 @@
 package dev.outfluencer.mcproxy.networking;
 
-import dev.outfluencer.mcproxy.networking.netty.PacketDecoder;
-import dev.outfluencer.mcproxy.networking.netty.PacketEncoder;
-import dev.outfluencer.mcproxy.networking.netty.PacketHandler;
+import dev.outfluencer.mcproxy.networking.netty.ClearSignal;
+import dev.outfluencer.mcproxy.networking.netty.handler.CompressionDecoder;
+import dev.outfluencer.mcproxy.networking.netty.handler.CompressionEncoder;
+import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
+import dev.outfluencer.mcproxy.networking.netty.handler.PacketDecoder;
+import dev.outfluencer.mcproxy.networking.netty.handler.PacketEncoder;
+import dev.outfluencer.mcproxy.networking.netty.handler.PacketHandler;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -93,6 +97,7 @@ public final class ConnectionHandle {
             return;
         }
         channel.config().setAutoRead(false);
+        channel.pipeline().fireUserEventTriggered(ClearSignal.INSTANCE);
         channel.writeAndFlush(packet == null ? Unpooled.EMPTY_BUFFER : packet).addListener(ChannelFutureListener.CLOSE);
         closed = true;
     }
@@ -103,6 +108,31 @@ public final class ConnectionHandle {
             return;
         }
         channel.config().setAutoRead(autoRead);
+    }
+
+    public void setCompression(int threshold) {
+        assert channel.eventLoop().inEventLoop();
+        if (threshold >= 0) {
+            if (this.channel.pipeline().get(HandlerNames.DECOMPRESS) instanceof CompressionDecoder compressionDecoder) {
+                compressionDecoder.setThreshold(threshold);
+            } else {
+                this.channel.pipeline().addAfter(HandlerNames.SPLITTER, HandlerNames.DECOMPRESS, new CompressionDecoder(threshold));
+            }
+
+            if (this.channel.pipeline().get(HandlerNames.COMPRESS) instanceof CompressionEncoder compressionEncoder) {
+                compressionEncoder.setThreshold(threshold);
+            } else {
+                this.channel.pipeline().addAfter(HandlerNames.PREPENDER, HandlerNames.COMPRESS, new CompressionEncoder(threshold));
+            }
+        } else {
+            if (this.channel.pipeline().get(HandlerNames.DECOMPRESS) instanceof CompressionDecoder) {
+                this.channel.pipeline().remove(HandlerNames.DECOMPRESS);
+            }
+
+            if (this.channel.pipeline().get(HandlerNames.COMPRESS) instanceof CompressionEncoder) {
+                this.channel.pipeline().remove(HandlerNames.COMPRESS);
+            }
+        }
     }
 
 }

@@ -9,6 +9,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundConfi
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import java.util.Map;
 
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
@@ -80,6 +81,12 @@ public enum Protocol {
                 ClientboundLoginFinishedPacket.class,
                 ClientboundLoginFinishedPacket::new,
                 map(MinecraftVersion.V26_1, 0x02)
+            );
+
+            clientbound.registerPacket(
+                ClientboundLoginCompressionPacket.class,
+                ClientboundLoginCompressionPacket::new,
+                map(MinecraftVersion.V26_1, 0x03)
             );
         }
     },

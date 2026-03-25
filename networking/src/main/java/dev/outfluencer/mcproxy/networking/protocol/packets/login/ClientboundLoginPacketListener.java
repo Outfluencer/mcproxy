@@ -6,4 +6,6 @@ public interface ClientboundLoginPacketListener extends PacketListener {
     boolean handle(ClientboundLoginDisconnectPacket packet);
 
     boolean handle(ClientboundLoginFinishedPacket packet);
+
+    boolean handle(ClientboundLoginCompressionPacket clientboundLoginCompressionPacket);
 }
