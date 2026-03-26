@@ -51,13 +51,6 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof DecodedPacket decodedPacket) {
             try {
-               {
-                    // close the connection at random times to trigger a fallback and see if everything is correctly impled
-                    if(connectionHandle.isServer() && ThreadLocalRandom.current().nextInt(50) == 1) {
-                        connectionHandle.close(null);
-                        return;
-                    }
-                }
                 boolean sendPacket = true;
                 Packet packet = decodedPacket.packet();
                 if (packet != null) {

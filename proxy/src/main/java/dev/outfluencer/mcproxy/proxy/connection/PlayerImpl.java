@@ -46,11 +46,11 @@ public class PlayerImpl implements Player {
 
     public void fallback() {
         a = !a;
-      //  if (a) {
+        if (a) {
             connect(new InetSocketAddress("127.0.0.1", 25566));
-      //  } else {
+        } else {
             connect(new InetSocketAddress("127.0.0.1", 25567));
-       // }
+        }
     }
 
     private boolean bundling;

@@ -17,11 +17,11 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
 
     @Override
     public boolean handle(ServerboundFinishConfigurationPacket packet) {
+        player.getConnection().setPacketListener(new PlayerGamePacketListener(player));
         if (!getServer().getConfigurationTracker().pendingLoginAck) {
             return false;
         }
         getServer().getConfigurationTracker().pendingLoginAck = false;
-        player.getConnection().setPacketListener(new PlayerGamePacketListener(player));
         return true;
     }
 

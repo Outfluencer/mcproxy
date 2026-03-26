@@ -19,7 +19,7 @@ public class ServerGamePacketListener extends ServerCommonPacketListener impleme
 
     @Override
     public boolean handle(ClientboundStartConfigurationPacket packet) {
-        player.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
+        server.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
         server.getConfigurationTracker().pendingStartConfigAck = true;
         return true;
     }
