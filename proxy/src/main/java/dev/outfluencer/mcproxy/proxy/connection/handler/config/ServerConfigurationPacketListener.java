@@ -7,6 +7,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundCon
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundRegistryDataPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.common.ServerCommonPacketListener;
 import dev.outfluencer.mcproxy.proxy.connection.handler.game.ServerGamePacketListener;
@@ -27,6 +28,7 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
     public ServerConfigurationPacketListener(ServerImpl server) {
         super(server);
         server.setConfigurationTracker(new ServerImpl.ConfigurationTracker());
+        assert server.getDecoderProtocol() == Protocol.CONFIG;
     }
 
     @Override

@@ -10,6 +10,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLogi
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
@@ -71,19 +72,18 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         player.setServer(server);
         backendHandle.setPacketListener(new ServerConfigurationPacketListener(server));
 
-        Protocol protocol = player.getEncoderProtocol();
-        if (protocol == Protocol.LOGIN) {
+        Protocol playerEncoderProtocol = player.getEncoderProtocol();
+        if (playerEncoderProtocol == Protocol.LOGIN) {
             player.sendPacket(packet);
-        } else if (protocol == Protocol.GAME) {
-
+        } else if (playerEncoderProtocol == Protocol.GAME) {
             if (player.isBundling()) {
                 player.toggleBundle();
                 player.sendPacket(new ClientboundBundleDelimiterPacket());
             }
-
             player.sendPacket(new ClientboundStartConfigurationPacket());
+            server.getConfigurationTracker().pendingStartConfigAck = true;
         } else {
-            throw new UnsupportedOperationException();
+            backendHandle.sendPacket(new ServerboundLoginAcknowledgedPacket());
         }
 
     }

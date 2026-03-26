@@ -60,5 +60,7 @@ public class ServerImpl implements Server {
     public static class ConfigurationTracker {
         public int pendingKnownPacks;
         public boolean pendingLoginAck;
+        public boolean pendingStartConfigAck;
+
     }
 }

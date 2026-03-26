@@ -23,6 +23,7 @@ public final class ConnectionHandle {
     private final Channel channel;
     private final PacketDecoder decoder;
     private final PacketEncoder encoder;
+    @Getter
     private final boolean server;
 
     @Getter

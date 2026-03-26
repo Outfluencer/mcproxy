@@ -12,15 +12,17 @@ public class PlayerGamePacketListener extends PlayerCommonPacketListener impleme
 
     public PlayerGamePacketListener(PlayerImpl player) {
         super(player);
+        assert player.getDecoderProtocol() == Protocol.GAME;
+
     }
 
     @Override
     public boolean handle(ServerboundConfigurationAcknowledgedPacket packet) {
         player.getConnection().setPacketListener(new PlayerConfigurationPacketListener(player));
-
-        Protocol protocol = player.getServer().getEncoderProtocol();
-        player.getServer().sendPacket(protocol == Protocol.LOGIN ? new ServerboundLoginAcknowledgedPacket() : packet);
+        if (!getServer().getConfigurationTracker().pendingStartConfigAck) {
+            return false;
+        }
+        getServer().sendPacket(getServer().getEncoderProtocol() == Protocol.LOGIN ? new ServerboundLoginAcknowledgedPacket() : packet);
         return false;
-
     }
 }

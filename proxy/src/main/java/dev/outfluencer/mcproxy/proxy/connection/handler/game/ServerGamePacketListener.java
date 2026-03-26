@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundGamePacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.common.ServerCommonPacketListener;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
@@ -12,11 +13,14 @@ public class ServerGamePacketListener extends ServerCommonPacketListener impleme
 
     public ServerGamePacketListener(ServerImpl server) {
         super(server);
+        assert server.getDecoderProtocol() == Protocol.GAME;
+
     }
 
     @Override
     public boolean handle(ClientboundStartConfigurationPacket packet) {
         player.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
+        server.getConfigurationTracker().pendingStartConfigAck = true;
         return true;
     }
 

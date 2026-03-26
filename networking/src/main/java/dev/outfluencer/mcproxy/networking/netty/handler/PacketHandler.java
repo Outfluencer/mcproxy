@@ -4,12 +4,15 @@ import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
 public class PacketHandler extends ChannelInboundHandlerAdapter {
@@ -48,6 +51,13 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof DecodedPacket decodedPacket) {
             try {
+               {
+                    // close the connection at random times to trigger a fallback and see if everything is correctly impled
+                    if(connectionHandle.isServer() && ThreadLocalRandom.current().nextInt(50) == 1) {
+                        connectionHandle.close(null);
+                        return;
+                    }
+                }
                 boolean sendPacket = true;
                 Packet packet = decodedPacket.packet();
                 if (packet != null) {
