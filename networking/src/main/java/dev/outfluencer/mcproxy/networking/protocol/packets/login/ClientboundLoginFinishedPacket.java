@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.login;
 
 import dev.outfluencer.mcproxy.networking.Property;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,5 +38,10 @@ public class ClientboundLoginFinishedPacket extends Packet<ClientboundLoginPacke
     @Override
     public boolean handle(ClientboundLoginPacketListener listener) {
         return listener.handle(this);
+    }
+
+    @Override
+    public Protocol nextProtocol() {
+        return Protocol.CONFIG;
     }
 }

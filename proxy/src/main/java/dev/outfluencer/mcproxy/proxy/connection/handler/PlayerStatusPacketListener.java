@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import net.lenni0451.mcstructs.text.components.StringComponent;
 
 @RequiredArgsConstructor
-public class ServerboundStatusPacketListenerImpl implements ServerboundStatusPacketListener {
+public class PlayerStatusPacketListener implements ServerboundStatusPacketListener {
 
     private final ConnectionHandle handle;
     private State state = State.AWAIT_STATUS;

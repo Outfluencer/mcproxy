@@ -5,4 +5,6 @@ import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 public interface ClientboundCommonPacketListener extends PacketListener {
 
     boolean handle(ClientboundCommonDisconnectPacket packet);
+
+    boolean handle(ClientboundUpdateTagsPacket clientboundUpdateTagsPacket);
 }

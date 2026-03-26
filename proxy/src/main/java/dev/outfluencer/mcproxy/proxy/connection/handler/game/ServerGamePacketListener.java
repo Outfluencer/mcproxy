@@ -4,24 +4,19 @@ import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundGamePacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
-import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
-import dev.outfluencer.mcproxy.proxy.connection.handler.common.ClientboundCommonPacketListenerImpl;
-import dev.outfluencer.mcproxy.proxy.connection.handler.config.ClientboundConfigurationPacketListenerImpl;
+import dev.outfluencer.mcproxy.proxy.connection.handler.common.ServerCommonPacketListener;
+import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
 
-public class ClientboundGamePacketListenerImpl extends ClientboundCommonPacketListenerImpl implements ClientboundGamePacketListener {
+public class ServerGamePacketListener extends ServerCommonPacketListener implements ClientboundGamePacketListener {
 
-    public ClientboundGamePacketListenerImpl(ServerImpl server) {
+    public ServerGamePacketListener(ServerImpl server) {
         super(server);
     }
 
     @Override
     public boolean handle(ClientboundStartConfigurationPacket packet) {
-        server.sendPacket(packet);
-        server.setEncoderProtocol(Protocol.CONFIG);
-
-        player.setDecoderProtocol(Protocol.CONFIG);
-        player.getConnection().setPacketListener(new ClientboundConfigurationPacketListenerImpl(server));
+        player.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
         return true;
     }
 

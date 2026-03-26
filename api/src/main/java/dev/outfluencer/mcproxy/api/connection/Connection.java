@@ -1,6 +1,6 @@
 package dev.outfluencer.mcproxy.api.connection;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 public interface Connection {
 
@@ -8,6 +8,6 @@ public interface Connection {
 
     void disconnect(String message);
 
-    InetSocketAddress getAddress();
+    SocketAddress getAddress();
 
 }

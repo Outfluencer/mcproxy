@@ -1,9 +1,9 @@
 package dev.outfluencer.mcproxy.networking.protocol.packets;
 
-import com.google.gson.JsonElement;
 import dev.outfluencer.mcproxy.networking.Property;
 import dev.outfluencer.mcproxy.networking.Util;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
@@ -109,10 +109,9 @@ public abstract class Packet<T extends PacketListener> {
         return codec.deserialize(readTag(byteBuf, version));
     }
 
-    public static void writeBaseComponent(TextComponent message, ByteBuf buf, int version)
-    {
+    public static void writeBaseComponent(TextComponent message, ByteBuf buf, int version) {
         TextComponentCodec codec = Util.textComponentCodecByVersion(version);
-        writeTag( codec.serializeNbtTree(message), buf, version );
+        writeTag(codec.serializeNbtTree(message), buf, version);
     }
 
     public static NbtTag readTag(ByteBuf input, int protocolVersion) {
@@ -133,19 +132,31 @@ public abstract class Packet<T extends PacketListener> {
         }
     }
 
-
-
-
-    public static void writeTag(NbtTag tag, ByteBuf output, int protocolVersion)
-    {
-        DataOutputStream out = new DataOutputStream( new ByteBufOutputStream( output ) );
-        try
-        {
-            out.writeByte( tag.getNbtType().getId() );
+    public static void writeTag(NbtTag tag, ByteBuf output, int protocolVersion) {
+        DataOutputStream out = new DataOutputStream(new ByteBufOutputStream(output));
+        try {
+            out.writeByte(tag.getNbtType().getId());
             new NbtWriter_v1_12().write(out, tag);
-        } catch ( IOException ex )
-        {
-            throw new RuntimeException( "Exception writing tag", ex );
+        } catch (IOException ex) {
+            throw new RuntimeException("Exception writing tag", ex);
+        }
+    }
+
+    public static int[] readVarIntArray(ByteBuf buf) {
+        int len = readVarInt(buf);
+        int[] ret = new int[len];
+
+        for (int i = 0; i < len; i++) {
+            ret[i] = readVarInt(buf);
+        }
+
+        return ret;
+    }
+
+    public static void writeVarIntArray(int[] arr, ByteBuf buf) {
+        writeVarInt(arr.length, buf);
+        for (int value : arr) {
+            writeVarInt(value, buf);
         }
     }
 
@@ -155,4 +166,17 @@ public abstract class Packet<T extends PacketListener> {
     public abstract void write(ByteBuf byteBuf, int version);
 
     public abstract boolean handle(T listener);
+
+    /**
+     * If a packet is sent that changes the protocol phase, this method should
+     * return the next protocol phase, it will be applied as the encoder protocol.
+     * <p>
+     * If a packet is received that changes protocol phase, this method should
+     * return the next protocol phase, it will be applied as the decoder protocol.
+     *
+     * @return the next protocol tp apply
+     */
+    public Protocol nextProtocol() {
+        return null;
+    }
 }

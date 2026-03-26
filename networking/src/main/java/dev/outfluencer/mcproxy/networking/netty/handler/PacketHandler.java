@@ -3,15 +3,18 @@ package dev.outfluencer.mcproxy.networking.netty.handler;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PacketHandler extends ChannelInboundHandlerAdapter {
 
+    @Getter
     @Setter
     @NonNull
     private PacketListener packetHandler;
@@ -46,8 +49,12 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof DecodedPacket decodedPacket) {
             try {
                 boolean sendPacket = true;
-                if (decodedPacket.packet() != null) {
-                    sendPacket = decodedPacket.packet().handle(packetHandler);
+                Packet packet = decodedPacket.packet();
+                if (packet != null) {
+                    if (packet.nextProtocol() != null) {
+                        connectionHandle.setDecoderProtocol(packet.nextProtocol());
+                    }
+                    sendPacket = packet.handle(packetHandler);
                 }
                 if (sendPacket) {
                     packetHandler.handle(decodedPacket);

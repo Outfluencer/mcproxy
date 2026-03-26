@@ -6,13 +6,12 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLogi
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginPacketListener;
-import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
-import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerboundConfigurationPacketListenerImpl;
+import dev.outfluencer.mcproxy.proxy.connection.handler.config.PlayerConfigurationPacketListener;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ServerboundLoginPacketListenerImpl implements ServerboundLoginPacketListener {
+public class PlayerLoginPacketListener implements ServerboundLoginPacketListener {
 
     private final ConnectionHandle handle;
     private PlayerImpl player;
@@ -36,12 +35,8 @@ public class ServerboundLoginPacketListenerImpl implements ServerboundLoginPacke
 
     @Override
     public boolean handle(ServerboundLoginAcknowledgedPacket packet) {
-        handle.setProtocol(Protocol.CONFIG);
-        handle.setPacketListener(new ServerboundConfigurationPacketListenerImpl(player));
-
-        player.getServer().sendPacket(packet);
-        player.getServer().setEncoderProtocol(Protocol.CONFIG);
-        return false;
+        handle.setPacketListener(new PlayerConfigurationPacketListener(player));
+        return true;
     }
 
     @Override

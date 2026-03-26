@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.UUID;
 
 @Getter
@@ -33,8 +34,8 @@ public class PlayerImpl implements Player {
     }
 
     @Override
-    public InetSocketAddress getAddress() {
-        return (InetSocketAddress) connection.getChannel().remoteAddress();
+    public SocketAddress getAddress() {
+        return connection.getChannel().remoteAddress();
     }
 
     public void connect(InetSocketAddress address) {
@@ -61,14 +62,6 @@ public class PlayerImpl implements Player {
 
     public void sendDecodedPacket(DecodedPacket decodedPacket) {
         connection.sendDecodedPacket(decodedPacket);
-    }
-
-    public void setDecoderProtocol(Protocol protocol) {
-        connection.setDecoderProtocol(protocol);
-    }
-
-    public void setEncoderProtocol(Protocol protocol) {
-        connection.setEncoderProtocol(protocol);
     }
 
     public Protocol getDecoderProtocol() {

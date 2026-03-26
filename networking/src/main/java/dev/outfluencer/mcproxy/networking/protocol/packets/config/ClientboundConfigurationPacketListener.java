@@ -4,4 +4,8 @@ import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 
 public interface ClientboundConfigurationPacketListener extends PacketListener {
     boolean handle(ClientboundFinishConfigurationPacket packet);
+
+    boolean handle(ClientboundRegistryDataPacket clientboundRegistryDataPacket);
+
+    boolean handle(ClientboundSelectKnownPacks clientboundSelectKnownPacks);
 }

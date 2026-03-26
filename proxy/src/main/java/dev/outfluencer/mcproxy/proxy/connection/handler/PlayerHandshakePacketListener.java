@@ -5,11 +5,11 @@ import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
-import dev.outfluencer.mcproxy.proxy.connection.handler.login.ServerboundLoginPacketListenerImpl;
+import dev.outfluencer.mcproxy.proxy.connection.handler.login.PlayerLoginPacketListener;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ServerboundHandshakeListenerImpl implements ServerboundHandshakePacketListener {
+public class PlayerHandshakePacketListener implements ServerboundHandshakePacketListener {
 
     private final ConnectionHandle handle;
 
@@ -18,10 +18,10 @@ public class ServerboundHandshakeListenerImpl implements ServerboundHandshakePac
         handle.setProtocolVersion(packet.getVersion());
         if (packet.getClientIntent().isLogin()) {
             handle.setProtocol(Protocol.LOGIN);
-            handle.setPacketListener(new ServerboundLoginPacketListenerImpl(handle));
+            handle.setPacketListener(new PlayerLoginPacketListener(handle));
         } else {
             handle.setProtocol(Protocol.STATUS);
-            handle.setPacketListener(new ServerboundStatusPacketListenerImpl(handle));
+            handle.setPacketListener(new PlayerStatusPacketListener(handle));
         }
         return false;
     }

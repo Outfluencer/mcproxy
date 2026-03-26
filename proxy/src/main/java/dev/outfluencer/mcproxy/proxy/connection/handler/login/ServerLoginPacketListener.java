@@ -13,13 +13,13 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHell
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
-import dev.outfluencer.mcproxy.proxy.connection.handler.config.ClientboundConfigurationPacketListenerImpl;
+import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
 import lombok.RequiredArgsConstructor;
 
 import java.net.InetSocketAddress;
 
 @RequiredArgsConstructor
-public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacketListener {
+public class ServerLoginPacketListener implements ClientboundLoginPacketListener {
 
     private final ConnectionHandle backendHandle;
     private final PlayerImpl player;
@@ -69,8 +69,7 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
 
         ServerImpl server = new ServerImpl(player, backendHandle);
         player.setServer(server);
-        server.setDecoderProtocol(Protocol.CONFIG);
-        backendHandle.setPacketListener(new ClientboundConfigurationPacketListenerImpl(server));
+        backendHandle.setPacketListener(new ServerConfigurationPacketListener(server));
 
         Protocol protocol = player.getEncoderProtocol();
         if (protocol == Protocol.LOGIN) {
@@ -83,7 +82,6 @@ public class ClientboundLoginPacketListenerImpl implements ClientboundLoginPacke
             }
 
             player.sendPacket(new ClientboundStartConfigurationPacket());
-            player.setEncoderProtocol(Protocol.CONFIG);
         } else {
             throw new UnsupportedOperationException();
         }

@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.networking.protocol.packets.game;
 
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
 
 public class ServerboundConfigurationAcknowledgedPacket extends Packet<ServerboundGamePacketListener> {
@@ -17,5 +18,10 @@ public class ServerboundConfigurationAcknowledgedPacket extends Packet<Serverbou
     @Override
     public boolean handle(ServerboundGamePacketListener listener) {
         return listener.handle(this);
+    }
+
+    @Override
+    public Protocol nextProtocol() {
+        return Protocol.CONFIG;
     }
 }

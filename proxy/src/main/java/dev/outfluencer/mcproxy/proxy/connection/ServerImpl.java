@@ -7,13 +7,17 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+import java.net.SocketAddress;
 
 @Getter
 @RequiredArgsConstructor
 public class ServerImpl implements Server {
     private final PlayerImpl player;
     private final ConnectionHandle connection;
-
+    @Setter
+    private ConfigurationTracker configurationTracker;
     public boolean isConnected() {
         return !connection.isClosed();
     }
@@ -30,14 +34,6 @@ public class ServerImpl implements Server {
         connection.sendDecodedPacket(decodedPacket);
     }
 
-    public void setDecoderProtocol(Protocol protocol) {
-        connection.setDecoderProtocol(protocol);
-    }
-
-    public void setEncoderProtocol(Protocol protocol) {
-        connection.setEncoderProtocol(protocol);
-    }
-
     public Protocol getDecoderProtocol() {
         return connection.getDecoderProtocol();
     }
@@ -46,4 +42,23 @@ public class ServerImpl implements Server {
         return connection.getEncoderProtocol();
     }
 
+    @Override
+    public String getName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void disconnect(String message) {
+        disconnect();
+    }
+
+    @Override
+    public SocketAddress getAddress() {
+        return connection.getChannel().remoteAddress();
+    }
+
+    public static class ConfigurationTracker {
+        public int pendingKnownPacks;
+        public boolean pendingLoginAck;
+    }
 }

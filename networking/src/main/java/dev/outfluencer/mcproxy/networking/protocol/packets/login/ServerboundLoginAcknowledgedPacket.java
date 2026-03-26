@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.networking.protocol.packets.login;
 
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,5 +27,10 @@ public class ServerboundLoginAcknowledgedPacket extends Packet<ServerboundLoginP
     @Override
     public boolean handle(ServerboundLoginPacketListener listener) {
         return listener.handle(this);
+    }
+
+    @Override
+    public Protocol nextProtocol() {
+        return Protocol.CONFIG;
     }
 }
