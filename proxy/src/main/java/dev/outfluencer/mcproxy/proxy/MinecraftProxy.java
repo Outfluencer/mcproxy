@@ -11,17 +11,22 @@ import dev.outfluencer.mcproxy.networking.netty.handler.VarInt21FrameEncoder;
 import dev.outfluencer.mcproxy.networking.protocol.registry.MinecraftVersion;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.handler.PlayerHandshakePacketListener;
+import dev.outfluencer.mcproxy.proxy.logging.ColorLogHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.ResourceLeakDetector;
 
+import java.util.logging.Logger;
+
 public class MinecraftProxy {
 
+    private static final Logger logger = Logger.getLogger(MinecraftProxy.class.getName());
     private static final int PORT = 25577;
 
     public static void start() {
+        ColorLogHandler.install();
 
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
         if ( System.getProperty( "io.netty.allocator.type" ) == null )
@@ -44,5 +49,7 @@ public class MinecraftProxy {
                 ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new PlayerHandshakePacketListener(handle), handle));
             }
         }).bind(PORT).syncUninterruptibly();
+
+        logger.info("Listening on port " + PORT);
     }
 }
