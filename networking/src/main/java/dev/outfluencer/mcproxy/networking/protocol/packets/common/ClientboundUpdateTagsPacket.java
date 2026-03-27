@@ -2,10 +2,20 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.common;
 
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClientboundUpdateTagsPacket extends Packet<ClientboundCommonPacketListener> {
 
     private Map<String, Map<String, int[]>> tags;

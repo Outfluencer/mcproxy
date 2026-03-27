@@ -3,7 +3,16 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.game;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 public class ServerboundConfigurationAcknowledgedPacket extends Packet<ServerboundGamePacketListener> {
     @Override
     public void read(ByteBuf byteBuf, int version) {

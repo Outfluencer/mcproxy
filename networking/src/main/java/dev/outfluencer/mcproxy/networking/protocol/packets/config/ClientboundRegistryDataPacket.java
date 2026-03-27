@@ -4,12 +4,20 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import net.lenni0451.mcstructs.nbt.NbtTag;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClientboundRegistryDataPacket extends Packet<ClientboundConfigurationPacketListener> {
 
     private String registryId;

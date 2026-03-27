@@ -3,9 +3,13 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.status;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
+@Getter
+@Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor

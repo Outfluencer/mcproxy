@@ -89,13 +89,13 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     }
 
     @Override
-    public void onException(Throwable throwable) {
-        backendHandle.close(null);
-    }
-
-
-    @Override
     public void handle(DecodedPacket decodedPacket) {
         throw new IllegalStateException("Unexpected DecodedPacket");
+    }
+
+    @Override
+    public String toString() {
+        String name = player != null ? player.getName() : null;
+        return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + backendHandle.getChannel().remoteAddress() + "]";
     }
 }

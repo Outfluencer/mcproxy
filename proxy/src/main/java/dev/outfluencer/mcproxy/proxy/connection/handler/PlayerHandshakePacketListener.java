@@ -30,4 +30,9 @@ public class PlayerHandshakePacketListener implements ServerboundHandshakePacket
     public void handle(DecodedPacket decodedPacket) {
         throw new IllegalStateException("Unexpected DecodedPacket");
     }
+
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() + "|" + handle.getChannel().remoteAddress() + "]";
+    }
 }

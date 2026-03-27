@@ -49,4 +49,9 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
             throw new IllegalStateException(errorMessage);
         }
     }
+
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() + "|" + handle.getChannel().remoteAddress() + "]";
+    }
 }

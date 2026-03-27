@@ -36,4 +36,9 @@ public class ServerCommonPacketListener implements ClientboundCommonPacketListen
         // connect to next fallback server.
         player.fallback();
     }
+
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() + "|" + player.getName() + "|" + server.getConnection().getChannel().remoteAddress() + "]";
+    }
 }

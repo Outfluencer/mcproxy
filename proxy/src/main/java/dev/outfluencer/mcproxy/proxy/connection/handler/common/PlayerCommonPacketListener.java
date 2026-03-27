@@ -34,4 +34,9 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
         // disconnect the backend server
         getServer().disconnect();
     }
+
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() + "|" + player.getName() + "|" + playerConnection.getChannel().remoteAddress() + "]";
+    }
 }

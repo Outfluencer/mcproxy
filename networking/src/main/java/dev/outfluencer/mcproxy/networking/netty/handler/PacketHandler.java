@@ -11,8 +11,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @RequiredArgsConstructor
 public class PacketHandler extends ChannelInboundHandlerAdapter {
+
+    private static final Logger logger = Logger.getLogger(PacketHandler.class.getName());
 
     @Getter
     @Setter
@@ -22,9 +27,12 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-        packetHandler.onException(cause);
-        connectionHandle.close(null);
+        logger.log(Level.SEVERE, packetHandler + " caught exception: ", cause);
+        try {
+            packetHandler.onException(cause);
+        } finally {
+            connectionHandle.close(null);
+        }
     }
 
     @Override
@@ -51,6 +59,7 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
                 boolean sendPacket = true;
                 Packet packet = decodedPacket.packet();
                 if (packet != null) {
+                    logger.info(packetHandler + " handles: " + packet);
                     if (packet.nextProtocol() != null) {
                         connectionHandle.setDecoderProtocol(packet.nextProtocol());
                     }
