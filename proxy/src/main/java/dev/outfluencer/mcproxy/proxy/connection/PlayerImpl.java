@@ -4,9 +4,13 @@ import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import lombok.Getter;
 import lombok.Setter;
+import net.lenni0451.mcstructs.text.TextComponent;
+import net.lenni0451.mcstructs.text.serializer.TextComponentSerializer;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -30,7 +34,11 @@ public class PlayerImpl implements Player {
 
     @Override
     public void disconnect(String message) {
-        connection.close(null);
+        switch (connection.getEncoderProtocol()) {
+            case HANDSHAKE, STATUS -> connection.close(null);
+            case LOGIN -> connection.close(new ClientboundLoginDisconnectPacket(TextComponent.of(message)));
+            case CONFIG, GAME -> connection.close(new ClientboundCommonDisconnectPacket(TextComponent.of(message)));
+        }
     }
 
     @Override

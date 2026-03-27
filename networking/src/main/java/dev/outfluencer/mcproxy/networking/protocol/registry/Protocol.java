@@ -31,7 +31,7 @@ public enum Protocol {
             serverbound.registerPacket(
                 ServerboundHandshakePacket.class,
                 ServerboundHandshakePacket::new,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
         }
     },
@@ -40,23 +40,23 @@ public enum Protocol {
             serverbound.registerPacket(
                 ServerboundStatusRequestPacket.class,
                 () -> ServerboundStatusRequestPacket.INSTANCE,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
             serverbound.registerPacket(
                 ServerboundPingRequest.class,
                 ServerboundPingRequest::new,
-                map(MinecraftVersion.V26_1, 0x01)
+                map(MinecraftVersion.V1_21_11, 0x01)
             );
 
             clientbound.registerPacket(
                 ClientboundStatusResponsePacket.class,
                 ClientboundStatusResponsePacket::new,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
             clientbound.registerPacket(
                 ClientboundPongResponsePacket.class,
                 ClientboundPongResponsePacket::new,
-                map(MinecraftVersion.V26_1, 0x01)
+                map(MinecraftVersion.V1_21_11, 0x01)
             );
         }
     },
@@ -65,28 +65,28 @@ public enum Protocol {
             serverbound.registerPacket(
                 ServerboundHelloPacket.class,
                 ServerboundHelloPacket::new,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
             serverbound.registerPacket(
                 ServerboundLoginAcknowledgedPacket.class,
                 ServerboundLoginAcknowledgedPacket::new,
-                map(MinecraftVersion.V26_1, 0x03)
+                map(MinecraftVersion.V1_21_11, 0x03)
             );
 
             clientbound.registerPacket(
                 ClientboundLoginDisconnectPacket.class,
                 ClientboundLoginDisconnectPacket::new,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
             clientbound.registerPacket(
                 ClientboundLoginFinishedPacket.class,
                 ClientboundLoginFinishedPacket::new,
-                map(MinecraftVersion.V26_1, 0x02)
+                map(MinecraftVersion.V1_21_11, 0x02)
             );
             clientbound.registerPacket(
                 ClientboundLoginCompressionPacket.class,
                 ClientboundLoginCompressionPacket::new,
-                map(MinecraftVersion.V26_1, 0x03)
+                map(MinecraftVersion.V1_21_11, 0x03)
             );
         }
     },
@@ -95,34 +95,34 @@ public enum Protocol {
             clientbound.registerPacket(
                 ClientboundFinishConfigurationPacket.class,
                 ClientboundFinishConfigurationPacket::new,
-                map(MinecraftVersion.V26_1, 0x03)
+                map(MinecraftVersion.V1_21_11, 0x03)
             );
             clientbound.registerPacket(
                 ClientboundRegistryDataPacket.class,
                 ClientboundRegistryDataPacket::new,
-                map(MinecraftVersion.V26_1, 0x07)
+                map(MinecraftVersion.V1_21_11, 0x07)
             );
 
             clientbound.registerPacket(
                 ClientboundSelectKnownPacks.class,
                 ClientboundSelectKnownPacks::new,
-                map(MinecraftVersion.V26_1, 0x0E)
+                map(MinecraftVersion.V1_21_11, 0x0E)
             );
             clientbound.registerPacket(
                 ClientboundUpdateTagsPacket.class,
                 ClientboundUpdateTagsPacket::new,
-                map(MinecraftVersion.V26_1, 0x0D)
+                map(MinecraftVersion.V1_21_11, 0x0D)
             );
 
             serverbound.registerPacket(
                 ServerboundFinishConfigurationPacket.class,
                 ServerboundFinishConfigurationPacket::new,
-                map(MinecraftVersion.V26_1, 0x03)
+                map(MinecraftVersion.V1_21_11, 0x03)
             );
             serverbound.registerPacket(
                 ServerboundSelectKnownPacks.class,
                 ServerboundSelectKnownPacks::new,
-                map(MinecraftVersion.V26_1, 0x07)
+                map(MinecraftVersion.V1_21_11, 0x07)
             );
         }
     },
@@ -131,23 +131,26 @@ public enum Protocol {
             clientbound.registerPacket(
                 ClientboundBundleDelimiterPacket.class,
                 ClientboundBundleDelimiterPacket::new,
-                map(MinecraftVersion.V26_1, 0x00)
+                map(MinecraftVersion.V1_21_11, 0x00)
             );
             clientbound.registerPacket(
                 ClientboundCommonDisconnectPacket.class,
                 ClientboundCommonDisconnectPacket::new,
-                map(MinecraftVersion.V26_1, 0x20)
+                map(MinecraftVersion.V1_21_11, 0x20)
             );
             clientbound.registerPacket(
                 ClientboundStartConfigurationPacket.class,
                 ClientboundStartConfigurationPacket::new,
-                map(MinecraftVersion.V26_1, 0x76 )
+                map(MinecraftVersion.V1_21_11, 0x74),
+                map(MinecraftVersion.V26_1, 0x76)
             );
 
             serverbound.registerPacket(
                 ServerboundConfigurationAcknowledgedPacket.class,
                 ServerboundConfigurationAcknowledgedPacket::new,
+                map(MinecraftVersion.V1_21_11, 0x0F),
                 map(MinecraftVersion.V26_1, 0x10)
+
             );
         }
     };

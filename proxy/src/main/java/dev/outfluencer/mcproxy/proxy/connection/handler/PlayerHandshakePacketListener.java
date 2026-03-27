@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacketListener;
@@ -28,11 +29,12 @@ public class PlayerHandshakePacketListener implements ServerboundHandshakePacket
 
     @Override
     public void handle(DecodedPacket decodedPacket) {
-        throw new IllegalStateException("Unexpected DecodedPacket");
+        throw new QuietException("Unexpected DecodedPacket");
     }
 
     @Override
     public String toString() {
         return "[" + getClass().getSimpleName() + "|" + handle.getAddress() + "]";
     }
+
 }

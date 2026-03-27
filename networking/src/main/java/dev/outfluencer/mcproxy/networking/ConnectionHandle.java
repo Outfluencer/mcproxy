@@ -10,12 +10,16 @@ import dev.outfluencer.mcproxy.networking.netty.handler.PacketHandler;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
+import io.netty.channel.VoidChannelPromise;
 import lombok.Getter;
+import net.lenni0451.mcstructs.text.TextComponent;
 
 import java.net.SocketAddress;
 
@@ -25,6 +29,7 @@ public final class ConnectionHandle {
     private final Channel channel;
     private final PacketDecoder decoder;
     private final PacketEncoder encoder;
+    private final ChannelPromise silentPromise;
     @Getter
     private final boolean server;
 
@@ -41,7 +46,7 @@ public final class ConnectionHandle {
     }
 
     public void setAddress() {
-        if(this.address != null) {
+        if (this.address != null) {
             throw new IllegalStateException("Cannot set address twice");
         }
         this.address = (channel.remoteAddress() == null) ? channel.parent().localAddress() : channel.remoteAddress();
@@ -50,6 +55,7 @@ public final class ConnectionHandle {
     public ConnectionHandle(Channel channel, boolean server) {
         assert channel.eventLoop().inEventLoop();
         // cache those values
+        this.silentPromise = new VoidChannelPromise(channel, false);
         this.decoder = channel.pipeline().get(PacketDecoder.class);
         this.encoder = channel.pipeline().get(PacketEncoder.class);
         this.channel = channel;
@@ -61,7 +67,7 @@ public final class ConnectionHandle {
         if (closed) {
             return;
         }
-        channel.writeAndFlush(packet, channel.voidPromise());
+        channel.writeAndFlush(packet, silentPromise);
         if (packet.nextProtocol() != null) {
             setEncoderProtocol(packet.nextProtocol());
         }
@@ -72,7 +78,7 @@ public final class ConnectionHandle {
         if (closed || decodedPacket.protocol() != getEncoderProtocol()) {
             return;
         }
-        channel.writeAndFlush(decodedPacket.byteBuf().retain(), channel.voidPromise());
+        channel.writeAndFlush(decodedPacket.byteBuf().retain(), silentPromise);
 
         Packet<?> packet = decodedPacket.packet();
         if (packet != null && packet.nextProtocol() != null) {
@@ -86,10 +92,15 @@ public final class ConnectionHandle {
         if (closed) {
             return;
         }
+        closed = true;
         channel.config().setAutoRead(false);
         channel.pipeline().fireUserEventTriggered(ClearSignal.INSTANCE);
-        channel.writeAndFlush(packet == null ? Unpooled.EMPTY_BUFFER : packet).addListener(ChannelFutureListener.CLOSE);
-        closed = true;
+        if (packet != null) {
+            channel.writeAndFlush(packet).addListener(ChannelFutureListener.CLOSE);
+            return;
+        }
+        channel.flush();
+        channel.close();
     }
 
     public void setCompression(int threshold) {
@@ -171,6 +182,27 @@ public final class ConnectionHandle {
                 }
             });
         }
+    }
+
+    public void disconnect(String message) {
+        assert channel.eventLoop().inEventLoop();
+        if (server) {
+            close(null);
+        } else {
+            switch (getEncoderProtocol()) {
+                case HANDSHAKE, STATUS -> close(null);
+                case LOGIN -> close(new ClientboundLoginDisconnectPacket(TextComponent.of(message)));
+                case CONFIG, GAME -> close(new ClientboundCommonDisconnectPacket(TextComponent.of(message)));
+            }
+        }
+    }
+
+    public void setAutoRead(boolean autoRead) {
+        assert channel.eventLoop().inEventLoop();
+        if (closed) {
+            return;
+        }
+        channel.config().setAutoRead(autoRead);
     }
 
 }

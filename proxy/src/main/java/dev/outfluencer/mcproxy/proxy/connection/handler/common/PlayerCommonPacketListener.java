@@ -39,4 +39,5 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
     public String toString() {
         return "[" + getClass().getSimpleName() + "|" + player.getName() + "|" + player.getAddress() + "]";
     }
+
 }

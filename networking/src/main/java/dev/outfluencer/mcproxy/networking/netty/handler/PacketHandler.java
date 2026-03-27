@@ -1,11 +1,15 @@
 package dev.outfluencer.mcproxy.networking.netty.handler;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.networking.netty.PacketLimiter;
+import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.TimeoutException;
+import io.netty.handler.timeout.WriteTimeoutException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,8 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = Logger.getLogger(PacketHandler.class.getName());
 
+    @Setter
+    private PacketLimiter packetLimiter;
     @Getter
     @Setter
     @NonNull
@@ -26,46 +32,45 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     private final ConnectionHandle connectionHandle;
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.log(Level.SEVERE, packetHandler + " caught exception: ", cause);
-        try {
-            packetHandler.onException(cause);
-        } finally {
-            connectionHandle.close(null);
-        }
-    }
-
-    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info(packetHandler + " channelActive");
         connectionHandle.setAddress();
         packetHandler.onConnect();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        logger.info(packetHandler + " channelInactive");
         connectionHandle.markClosed();
         packetHandler.onDisconnect();
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        logger.warning(packetHandler + " channelWritabilityChanged " + ctx.channel().isWritable());
+        connectionHandle.setAutoRead(ctx.channel().isWritable());
         packetHandler.onWritabilityChanged();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        assert !connectionHandle.isClosed() : "received data of closed channel";
         if (msg instanceof DecodedPacket decodedPacket) {
             try {
                 boolean sendPacket = true;
                 Packet packet = decodedPacket.packet();
                 if (packet != null) {
-                    logger.info(packetHandler + " handles: " + packet);
                     if (packet.nextProtocol() != null) {
                         connectionHandle.setDecoderProtocol(packet.nextProtocol());
                     }
                     sendPacket = packet.handle(packetHandler);
                 }
+
+                if (packetLimiter != null && !packetLimiter.incrementAndCheck(decodedPacket.byteBuf().readableBytes())) {
+                    throw new QuietException("Too many packets received");
+                }
+
                 if (sendPacket) {
                     packetHandler.handle(decodedPacket);
                 }
@@ -74,6 +79,16 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
             }
         } else {
             throw new UnsupportedOperationException(String.format("%s is not supported", msg.getClass().getName()));
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        connectionHandle.disconnect("§c" + cause);
+        if (cause instanceof QuietException || cause instanceof TimeoutException) {
+            logger.log(Level.WARNING, "{0} caught exception: {1}", new Object[] {packetHandler, cause});
+        } else {
+            logger.log(Level.SEVERE, packetHandler + " caught exception: ", cause);
         }
     }
 }

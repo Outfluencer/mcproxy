@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.proxy.connection.handler;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.ServerStatus;
+import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.status.ClientboundPongResponsePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.status.ClientboundStatusResponsePacket;
@@ -15,7 +16,7 @@ import net.lenni0451.mcstructs.text.components.StringComponent;
 @RequiredArgsConstructor
 public class PlayerStatusPacketListener implements ServerboundStatusPacketListener {
 
-    private final ConnectionHandle handle;
+    private final ConnectionHandle connection;
     private State state = State.AWAIT_STATUS;
 
     private enum State {
@@ -25,7 +26,7 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
     @Override
     public boolean handle(ServerboundStatusRequestPacket packet) {
         stateTransition(State.AWAIT_STATUS, State.RECEIVED_STATUS, "Unexpected ServerboundStatusRequestPacket");
-        handle.sendPacket(new ClientboundStatusResponsePacket(new ServerStatus(new ServerStatus.Version("mcproxy test server", MinecraftVersion.V26_1), null, new StringComponent("mcproxy test server"))));
+        connection.sendPacket(new ClientboundStatusResponsePacket(new ServerStatus(new ServerStatus.Version("mcproxy test server", MinecraftVersion.V26_1), null, new StringComponent("mcproxy test server"))));
         state = State.AWAIT_PING;
         return false;
     }
@@ -33,25 +34,26 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
     @Override
     public boolean handle(ServerboundPingRequest packet) {
         stateTransition(State.AWAIT_PING, State.RECEIVED_PING, "Unexpected ServerboundPingRequest");
-        handle.close(new ClientboundPongResponsePacket(packet.getPing()));
+        connection.close(new ClientboundPongResponsePacket(packet.getPing()));
         return false;
     }
 
     @Override
     public void handle(DecodedPacket decodedPacket) {
-        throw new IllegalStateException("Unexpected DecodedPacket");
+        throw new QuietException("Unexpected DecodedPacket");
     }
 
     private void stateTransition(State expected, State next, String errorMessage) {
         if (state == expected) {
             state = next;
-        } else  {
-            throw new IllegalStateException(errorMessage);
+        } else {
+            throw new QuietException(errorMessage);
         }
     }
 
     @Override
     public String toString() {
-        return "[" + getClass().getSimpleName() + "|" + handle.getAddress() + "]";
+        return "[" + getClass().getSimpleName() + "|" + connection.getAddress() + "]";
     }
+
 }

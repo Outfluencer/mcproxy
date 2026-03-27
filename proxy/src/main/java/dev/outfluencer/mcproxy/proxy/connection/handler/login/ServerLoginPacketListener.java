@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
@@ -90,7 +91,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
 
     @Override
     public void handle(DecodedPacket decodedPacket) {
-        throw new IllegalStateException("Unexpected DecodedPacket");
+        throw new QuietException("Unexpected DecodedPacket");
     }
 
     @Override
@@ -98,4 +99,5 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         String name = player != null ? player.getName() : null;
         return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + backendHandle.getAddress() + "]";
     }
+
 }

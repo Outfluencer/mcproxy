@@ -8,14 +8,14 @@ public class Util {
 
     public static TextComponentSerializer textComponentSerializerByVersion(int protocolVersion) {
         return switch (protocolVersion) {
-            case MinecraftVersion.V26_1 -> TextComponentSerializer.V1_21_9;
+            case MinecraftVersion.V1_21_11, MinecraftVersion.V26_1 -> TextComponentSerializer.V1_21_9;
             default -> throw new IllegalStateException("Unexpected value: " + protocolVersion);
         };
     }
 
     public static TextComponentCodec textComponentCodecByVersion(int protocolVersion) {
         return switch (protocolVersion) {
-            case MinecraftVersion.V26_1 -> TextComponentCodec.V1_21_9;
+            case MinecraftVersion.V1_21_11, MinecraftVersion.V26_1 -> TextComponentCodec.V1_21_9;
             default -> throw new IllegalStateException("Unexpected value: " + protocolVersion);
         };
     }

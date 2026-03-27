@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.proxy;
 
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
+import dev.outfluencer.mcproxy.networking.netty.PacketLimiter;
 import dev.outfluencer.mcproxy.networking.netty.handler.PacketDecoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.PacketEncoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.PacketHandler;
@@ -16,6 +17,8 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.ResourceLeakDetector;
 
 import java.util.logging.Logger;
@@ -42,11 +45,15 @@ public class MinecraftProxy {
             protected void initChannel(Channel ch) {
                 ch.pipeline()
                     .addLast(HandlerNames.SPLITTER, new Varint21FrameDecoder())
+                    .addLast(HandlerNames.READ_TIMEOUT, new ReadTimeoutHandler(30))
                     .addLast(HandlerNames.DECODER, new PacketDecoder(MinecraftVersion.V26_1, Protocol.HANDSHAKE.serverbound))
+                    .addLast(HandlerNames.WRITE_TIMEOUT, new WriteTimeoutHandler(30))
                     .addLast(HandlerNames.PREPENDER, new VarInt21FrameEncoder())
                     .addLast(HandlerNames.ENCODER, new PacketEncoder(MinecraftVersion.V26_1, Protocol.HANDSHAKE.clientbound));
                 ConnectionHandle handle = new ConnectionHandle(ch, false);
-                ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new PlayerHandshakePacketListener(handle), handle));
+                PacketHandler handler = new PacketHandler(new PlayerHandshakePacketListener(handle), handle);
+                handler.setPacketLimiter(new PacketLimiter(1 << 12, 1 << 25));
+                ch.pipeline().addLast(HandlerNames.PACKET_HANDLER, handler);
             }
         }).bind(PORT).syncUninterruptibly();
 
