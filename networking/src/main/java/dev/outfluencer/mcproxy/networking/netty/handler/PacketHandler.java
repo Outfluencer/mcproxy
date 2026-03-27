@@ -4,15 +4,12 @@ import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
-import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 @RequiredArgsConstructor
 public class PacketHandler extends ChannelInboundHandlerAdapter {
@@ -27,7 +24,7 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         packetHandler.onException(cause);
-        ctx.close();
+        connectionHandle.close(null);
     }
 
     @Override

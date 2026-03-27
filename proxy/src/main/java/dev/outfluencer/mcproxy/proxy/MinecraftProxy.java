@@ -19,7 +19,7 @@ import io.netty.util.ResourceLeakDetector;
 
 public class MinecraftProxy {
 
-    private static final int PORT = 25565;
+    private static final int PORT = 25577;
 
     public static void start() {
 

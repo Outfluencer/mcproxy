@@ -24,10 +24,7 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
 
     @Override
     public boolean handle(ServerboundStatusRequestPacket packet) {
-        if (state != State.AWAIT_STATUS) {
-            throw new IllegalStateException("Unexpected ServerboundStatusRequestPacket");
-        }
-        state = State.RECEIVED_STATUS;
+        stateTransition(State.AWAIT_STATUS, State.RECEIVED_STATUS, "Unexpected ServerboundStatusRequestPacket");
         handle.sendPacket(new ClientboundStatusResponsePacket(new ServerStatus(new ServerStatus.Version("mcproxy test server", MinecraftVersion.V26_1), null, new StringComponent("mcproxy test server"))));
         state = State.AWAIT_PING;
         return false;
@@ -35,10 +32,7 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
 
     @Override
     public boolean handle(ServerboundPingRequest packet) {
-        if (state != State.AWAIT_PING) {
-            throw new IllegalStateException("Unexpected ServerboundStatusRequestPacket");
-        }
-        state = State.RECEIVED_PING;
+        stateTransition(State.AWAIT_PING, State.RECEIVED_PING, "Unexpected ServerboundPingRequest");
         handle.close(new ClientboundPongResponsePacket(packet.getPing()));
         return false;
     }
@@ -46,5 +40,13 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
     @Override
     public void handle(DecodedPacket decodedPacket) {
         throw new IllegalStateException("Unexpected DecodedPacket");
+    }
+
+    private void stateTransition(State expected, State next, String errorMessage) {
+        if (state == expected) {
+            state = next;
+        } else  {
+            throw new IllegalStateException(errorMessage);
+        }
     }
 }

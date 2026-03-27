@@ -42,15 +42,8 @@ public class PlayerImpl implements Player {
         new BackendConnector(this, address).connect();
     }
 
-    boolean a = false;
-
     public void fallback() {
-        a = !a;
-        if (a) {
-            connect(new InetSocketAddress("127.0.0.1", 25566));
-        } else {
-            connect(new InetSocketAddress("127.0.0.1", 25567));
-        }
+        connect(new InetSocketAddress("127.0.0.1", 25565));
     }
 
     private boolean bundling;
