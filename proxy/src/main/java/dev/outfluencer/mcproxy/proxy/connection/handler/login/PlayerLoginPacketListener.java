@@ -66,6 +66,6 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     @Override
     public String toString() {
         String name = player != null ? player.getName() : null;
-        return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + handle.getChannel().remoteAddress() + "]";
+        return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + handle.getAddress() + "]";
     }
 }

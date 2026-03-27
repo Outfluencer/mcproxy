@@ -33,6 +33,6 @@ public class PlayerHandshakePacketListener implements ServerboundHandshakePacket
 
     @Override
     public String toString() {
-        return "[" + getClass().getSimpleName() + "|" + handle.getChannel().remoteAddress() + "]";
+        return "[" + getClass().getSimpleName() + "|" + handle.getAddress() + "]";
     }
 }

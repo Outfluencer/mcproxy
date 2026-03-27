@@ -17,6 +17,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoop;
 import lombok.Getter;
 
+import java.net.SocketAddress;
+
 public final class ConnectionHandle {
 
     @Getter
@@ -30,10 +32,19 @@ public final class ConnectionHandle {
     private int protocolVersion;
     @Getter
     private boolean closed;
+    @Getter
+    private SocketAddress address;
 
     public void markClosed() {
         assert channel.eventLoop().inEventLoop();
         this.closed = true;
+    }
+
+    public void setAddress() {
+        if(this.address != null) {
+            throw new IllegalStateException("Cannot set address twice");
+        }
+        this.address = (channel.remoteAddress() == null) ? channel.parent().localAddress() : channel.remoteAddress();
     }
 
     public ConnectionHandle(Channel channel, boolean server) {

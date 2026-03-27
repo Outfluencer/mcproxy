@@ -52,6 +52,6 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
 
     @Override
     public String toString() {
-        return "[" + getClass().getSimpleName() + "|" + handle.getChannel().remoteAddress() + "]";
+        return "[" + getClass().getSimpleName() + "|" + handle.getAddress() + "]";
     }
 }

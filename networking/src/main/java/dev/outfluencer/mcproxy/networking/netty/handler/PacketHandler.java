@@ -37,6 +37,7 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        connectionHandle.setAddress();
         packetHandler.onConnect();
     }
 

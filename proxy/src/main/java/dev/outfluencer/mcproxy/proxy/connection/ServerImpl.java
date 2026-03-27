@@ -44,7 +44,7 @@ public class ServerImpl implements Server {
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return String.valueOf(getAddress());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ServerImpl implements Server {
 
     @Override
     public SocketAddress getAddress() {
-        return connection.getChannel().remoteAddress();
+        return connection.getAddress();
     }
 
     public static class ConfigurationTracker {

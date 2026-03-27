@@ -35,7 +35,7 @@ public class PlayerImpl implements Player {
 
     @Override
     public SocketAddress getAddress() {
-        return connection.getChannel().remoteAddress();
+        return connection.getAddress();
     }
 
     public void connect(InetSocketAddress address) {
