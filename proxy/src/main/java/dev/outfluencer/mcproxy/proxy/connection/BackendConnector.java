@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
+import dev.outfluencer.mcproxy.config.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
 import dev.outfluencer.mcproxy.networking.netty.PipelineUtil;
@@ -13,6 +14,7 @@ import dev.outfluencer.mcproxy.proxy.connection.handler.login.ServerLoginPacketL
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 
 import java.net.InetSocketAddress;
@@ -21,12 +23,12 @@ import java.net.InetSocketAddress;
 public class BackendConnector {
 
     private final PlayerImpl player;
-    private final InetSocketAddress address;
+    private final ServerInfo serverInfo;
 
     public void connect() {
         int protocolVersion = player.getConnection().getProtocolVersion();
 
-        new Bootstrap().group(player.getConnection().getChannel().eventLoop()).channel(PipelineUtil.clientChannelType()).handler(new ChannelInitializer<>() {
+        new Bootstrap().group(player.getConnection().getChannel().eventLoop()).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000).channel(PipelineUtil.clientChannelType()).handler(new ChannelInitializer<>() {
             @Override
             protected void initChannel(Channel ch) {
                 ch.pipeline()
@@ -35,8 +37,8 @@ public class BackendConnector {
                     .addLast(HandlerNames.PREPENDER, new VarInt21FrameEncoder())
                     .addLast(HandlerNames.ENCODER, new PacketEncoder(protocolVersion, Protocol.HANDSHAKE.serverbound));
                 ConnectionHandle backendHandle = new ConnectionHandle(ch, true);
-                ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new ServerLoginPacketListener(backendHandle, player, address), backendHandle));
+                ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new ServerLoginPacketListener(backendHandle, player, serverInfo), backendHandle));
             }
-        }).connect(address);
+        }).connect(serverInfo.getSocketAddress());
     }
 }

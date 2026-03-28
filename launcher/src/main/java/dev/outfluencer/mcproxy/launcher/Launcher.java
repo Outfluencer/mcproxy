@@ -2,6 +2,8 @@ package dev.outfluencer.mcproxy.launcher;
 
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 
+import java.util.logging.Level;
+
 public class Launcher {
 
     public static void main(String[] args) {
@@ -10,7 +12,8 @@ public class Launcher {
             return;
         }
 
-        MinecraftProxy.start();
+        long start = System.currentTimeMillis();
+        MinecraftProxy.getLogger().log(Level.INFO, "Proxy started in {0}ms", (System.currentTimeMillis() - start));
     }
 
 }

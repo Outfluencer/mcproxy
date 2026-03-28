@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler;
 
+import dev.outfluencer.mcproxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.ServerStatus;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
@@ -17,6 +18,7 @@ import net.lenni0451.mcstructs.text.components.StringComponent;
 public class PlayerStatusPacketListener implements ServerboundStatusPacketListener {
 
     private final ConnectionHandle connection;
+    private final ProxyConfig config;
     private State state = State.AWAIT_STATUS;
 
     private enum State {
@@ -26,7 +28,12 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
     @Override
     public boolean handle(ServerboundStatusRequestPacket packet) {
         stateTransition(State.AWAIT_STATUS, State.RECEIVED_STATUS, "Unexpected ServerboundStatusRequestPacket");
-        connection.sendPacket(new ClientboundStatusResponsePacket(new ServerStatus(new ServerStatus.Version("mcproxy test server", MinecraftVersion.V26_1), null, new StringComponent("mcproxy test server"))));
+        ServerStatus.Players players = new ServerStatus.Players(config.getMaxPlayers(), 0, null);
+        connection.sendPacket(new ClientboundStatusResponsePacket(new ServerStatus(
+                new ServerStatus.Version("mcproxy", MinecraftVersion.V26_1),
+                players,
+                new StringComponent(config.getMotd())
+        )));
         state = State.AWAIT_PING;
         return false;
     }
@@ -36,11 +43,6 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
         stateTransition(State.AWAIT_PING, State.RECEIVED_PING, "Unexpected ServerboundPingRequest");
         connection.close(new ClientboundPongResponsePacket(packet.getPing()));
         return false;
-    }
-
-    @Override
-    public void handle(DecodedPacket decodedPacket) {
-        throw new QuietException("Unexpected DecodedPacket");
     }
 
     private void stateTransition(State expected, State next, String errorMessage) {

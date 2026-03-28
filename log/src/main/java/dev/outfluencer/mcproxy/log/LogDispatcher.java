@@ -1,4 +1,4 @@
-package dev.outfluencer.mcproxy.proxy.logging;
+package dev.outfluencer.mcproxy.log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

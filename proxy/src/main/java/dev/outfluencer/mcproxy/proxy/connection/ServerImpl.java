@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Server;
+import dev.outfluencer.mcproxy.config.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -14,6 +15,7 @@ import java.net.SocketAddress;
 @Getter
 @RequiredArgsConstructor
 public class ServerImpl implements Server {
+    private final ServerInfo serverInfo;
     private final PlayerImpl player;
     private final ConnectionHandle connection;
     @Setter

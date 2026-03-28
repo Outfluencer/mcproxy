@@ -10,6 +10,8 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>log</module>
+        <module>config</module>
         <module>api</module>
         <module>networking</module>
         <module>proxy</module>
@@ -21,6 +23,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <gson.version>2.13.2</gson.version>
         <netty.version>4.2.10.Final</netty.version>
         <lombok.version>1.18.44</lombok.version>
         <junit.version>5.11.4</junit.version>
@@ -51,10 +54,26 @@
             </dependency>
             <dependency>
                 <groupId>dev.outfluencer</groupId>
+                <artifactId>log</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.outfluencer</groupId>
+                <artifactId>config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.outfluencer</groupId>
                 <artifactId>proxy</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- Gson -->
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
             <!-- Netty -->
             <dependency>
                 <groupId>io.netty</groupId>

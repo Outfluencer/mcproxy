@@ -9,7 +9,6 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.TimeoutException;
-import io.netty.handler.timeout.WriteTimeoutException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -33,21 +32,18 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.info(packetHandler + " channelActive");
         connectionHandle.setAddress();
         packetHandler.onConnect();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info(packetHandler + " channelInactive");
         connectionHandle.markClosed();
         packetHandler.onDisconnect();
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        logger.warning(packetHandler + " channelWritabilityChanged " + ctx.channel().isWritable());
         connectionHandle.setAutoRead(ctx.channel().isWritable());
         packetHandler.onWritabilityChanged();
     }

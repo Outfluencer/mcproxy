@@ -1,8 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
+import dev.outfluencer.mcproxy.config.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
-import dev.outfluencer.mcproxy.networking.netty.QuietException;
-import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
@@ -18,18 +17,16 @@ import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
 import lombok.RequiredArgsConstructor;
 
-import java.net.InetSocketAddress;
-
 @RequiredArgsConstructor
 public class ServerLoginPacketListener implements ClientboundLoginPacketListener {
 
     private final ConnectionHandle backendHandle;
     private final PlayerImpl player;
-    private final InetSocketAddress backendAddress;
+    private final ServerInfo serverInfo;
 
     @Override
     public void onConnect() {
-        ServerboundHandshakePacket handshake = new ServerboundHandshakePacket(player.getConnection().getProtocolVersion(), backendAddress.getHostString(), backendAddress.getPort(), ServerboundHandshakePacket.ClientIntent.LOGIN);
+        ServerboundHandshakePacket handshake = new ServerboundHandshakePacket(player.getConnection().getProtocolVersion(), serverInfo.getAddress(), serverInfo.getPort(), ServerboundHandshakePacket.ClientIntent.LOGIN);
         backendHandle.sendPacket(handshake);
         backendHandle.setProtocol(Protocol.LOGIN);
         backendHandle.sendPacket(new ServerboundHelloPacket(player.getName(), player.getUuid()));
@@ -69,9 +66,9 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
             return;
         }
 
-        ServerImpl server = new ServerImpl(player, backendHandle);
-        player.setServer(server);
+        ServerImpl server = new ServerImpl(serverInfo, player, backendHandle);
         backendHandle.setPacketListener(new ServerConfigurationPacketListener(server));
+        player.setServer(server);
 
         Protocol playerEncoderProtocol = player.getEncoderProtocol();
         if (playerEncoderProtocol == Protocol.LOGIN) {
@@ -90,14 +87,15 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     }
 
     @Override
-    public void handle(DecodedPacket decodedPacket) {
-        throw new QuietException("Unexpected DecodedPacket");
-    }
-
-    @Override
     public String toString() {
         String name = player != null ? player.getName() : null;
         return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + backendHandle.getAddress() + "]";
     }
 
+    @Override
+    public void onDisconnect() {
+        if(player.getFallbackConnects() != null) {
+            player.connectToNextFallback();
+        }
+    }
 }

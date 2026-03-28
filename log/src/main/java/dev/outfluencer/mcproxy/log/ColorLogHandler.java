@@ -1,4 +1,4 @@
-package dev.outfluencer.mcproxy.proxy.logging;
+package dev.outfluencer.mcproxy.log;
 
 import java.nio.file.Path;
 import java.util.logging.Handler;

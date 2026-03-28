@@ -1,6 +1,8 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Player;
+import dev.outfluencer.mcproxy.config.ProxyConfig;
+import dev.outfluencer.mcproxy.config.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -10,10 +12,8 @@ import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import lombok.Getter;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
-import net.lenni0451.mcstructs.text.serializer.TextComponentSerializer;
-
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -21,15 +21,19 @@ import java.util.UUID;
 public class PlayerImpl implements Player {
 
     private final ConnectionHandle connection;
+    private final ProxyConfig config;
 
     private String name;
     private UUID uuid;
     private ServerImpl server;
+    private List<ServerInfo> fallbackConnects;
 
-    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid) {
+
+    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid, ProxyConfig config) {
         this.connection = connectionHandle;
         this.name = name;
         this.uuid = uuid;
+        this.config = config;
     }
 
     @Override
@@ -46,12 +50,30 @@ public class PlayerImpl implements Player {
         return connection.getAddress();
     }
 
-    public void connect(InetSocketAddress address) {
-        new BackendConnector(this, address).connect();
+    public void connect(ServerInfo serverInfo) {
+        new BackendConnector(this, serverInfo).connect();
+    }
+    public void fallback() {
+        assert fallbackConnects == null;
+        fallbackConnects = config.getFallbackServers();
+        connectToNextFallback();
     }
 
-    public void fallback() {
-        connect(new InetSocketAddress("127.0.0.1", 25565));
+    public void connectToNextFallback() {
+        if (fallbackConnects == null || fallbackConnects.isEmpty()) {
+            disconnect("No fallback server found");
+            return;
+        }
+        connect(fallbackConnects.removeFirst());
+
+        if (fallbackConnects.isEmpty()) {
+            fallbackConnects = null;
+        }
+    }
+
+    public void setServer(ServerImpl server) {
+        this.server = server;
+        fallbackConnects = null;
     }
 
     private boolean bundling;

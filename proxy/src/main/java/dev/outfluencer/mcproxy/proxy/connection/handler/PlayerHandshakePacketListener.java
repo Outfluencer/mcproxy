@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler;
 
+import dev.outfluencer.mcproxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
@@ -13,23 +14,19 @@ import lombok.RequiredArgsConstructor;
 public class PlayerHandshakePacketListener implements ServerboundHandshakePacketListener {
 
     private final ConnectionHandle handle;
+    private final ProxyConfig config;
 
     @Override
     public boolean handle(ServerboundHandshakePacket packet) {
         handle.setProtocolVersion(packet.getVersion());
         if (packet.getClientIntent().isLogin()) {
             handle.setProtocol(Protocol.LOGIN);
-            handle.setPacketListener(new PlayerLoginPacketListener(handle));
+            handle.setPacketListener(new PlayerLoginPacketListener(handle, config));
         } else {
             handle.setProtocol(Protocol.STATUS);
-            handle.setPacketListener(new PlayerStatusPacketListener(handle));
+            handle.setPacketListener(new PlayerStatusPacketListener(handle, config));
         }
         return false;
-    }
-
-    @Override
-    public void handle(DecodedPacket decodedPacket) {
-        throw new QuietException("Unexpected DecodedPacket");
     }
 
     @Override
