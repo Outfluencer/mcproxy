@@ -26,9 +26,9 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
     private final Queue<Packet<?>> registryAccumulationQueue = new LinkedList<>();
 
     public ServerConfigurationPacketListener(ServerImpl server) {
+        assert server.getDecoderProtocol() == Protocol.CONFIG;
         super(server);
         server.setConfigurationTracker(new ServerImpl.ConfigurationTracker());
-        assert server.getDecoderProtocol() == Protocol.CONFIG;
     }
 
     @Override

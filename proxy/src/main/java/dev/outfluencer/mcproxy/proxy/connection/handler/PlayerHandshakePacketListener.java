@@ -14,17 +14,16 @@ import lombok.RequiredArgsConstructor;
 public class PlayerHandshakePacketListener implements ServerboundHandshakePacketListener {
 
     private final ConnectionHandle handle;
-    private final ProxyConfig config;
 
     @Override
     public boolean handle(ServerboundHandshakePacket packet) {
         handle.setProtocolVersion(packet.getVersion());
         if (packet.getClientIntent().isLogin()) {
             handle.setProtocol(Protocol.LOGIN);
-            handle.setPacketListener(new PlayerLoginPacketListener(handle, config));
+            handle.setPacketListener(new PlayerLoginPacketListener(handle));
         } else {
             handle.setProtocol(Protocol.STATUS);
-            handle.setPacketListener(new PlayerStatusPacketListener(handle, config));
+            handle.setPacketListener(new PlayerStatusPacketListener(handle));
         }
         return false;
     }

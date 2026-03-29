@@ -1,7 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Player;
-import dev.outfluencer.mcproxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.config.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
@@ -9,10 +8,13 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import lombok.Getter;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
+
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,19 +23,18 @@ import java.util.UUID;
 public class PlayerImpl implements Player {
 
     private final ConnectionHandle connection;
-    private final ProxyConfig config;
 
     private String name;
     private UUID uuid;
     private ServerImpl server;
+    private List<ServerImpl> pendingConnections;
     private List<ServerInfo> fallbackConnects;
 
 
-    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid, ProxyConfig config) {
+    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid) {
         this.connection = connectionHandle;
         this.name = name;
         this.uuid = uuid;
-        this.config = config;
     }
 
     @Override
@@ -55,7 +56,7 @@ public class PlayerImpl implements Player {
     }
     public void fallback() {
         assert fallbackConnects == null;
-        fallbackConnects = config.getFallbackServers();
+        fallbackConnects = MinecraftProxy.getInstance().getConfig().getFallbackServers();
         connectToNextFallback();
     }
 
@@ -73,7 +74,29 @@ public class PlayerImpl implements Player {
 
     public void setServer(ServerImpl server) {
         this.server = server;
+        if (pendingConnections != null) {
+            pendingConnections.remove(server);
+        }
         fallbackConnects = null;
+    }
+
+    public void addPendingConnection(ServerImpl server) {
+        if (pendingConnections == null) {
+            pendingConnections = new ArrayList<>();
+        }
+        pendingConnections.add(server);
+    }
+
+    public void disconnectPendingConnections() {
+        List<ServerImpl> pending = this.pendingConnections;
+        this.pendingConnections = null;
+        if (pending != null) {
+            for (ServerImpl server : pending) {
+                if (server.isConnected()) {
+                    server.disconnect();
+                }
+            }
+        }
     }
 
     private boolean bundling;
@@ -100,5 +123,9 @@ public class PlayerImpl implements Player {
 
     public Protocol getEncoderProtocol() {
         return connection.getEncoderProtocol();
+    }
+
+    public boolean isConnectedToServer() {
+        return server != null && server.isConnected();
     }
 }

@@ -63,6 +63,5 @@ public class ServerImpl implements Server {
         public int pendingKnownPacks;
         public boolean pendingLoginAck;
         public boolean pendingStartConfigAck;
-
     }
 }

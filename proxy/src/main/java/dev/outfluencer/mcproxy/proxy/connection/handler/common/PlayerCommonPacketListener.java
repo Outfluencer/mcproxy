@@ -1,6 +1,5 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.common;
 
-import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundCommonPacketListener;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
@@ -9,11 +8,9 @@ import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 public class PlayerCommonPacketListener implements ServerboundCommonPacketListener {
 
     protected final PlayerImpl player;
-    protected final ConnectionHandle playerConnection;
 
     public PlayerCommonPacketListener(PlayerImpl player) {
         this.player = player;
-        this.playerConnection = player.getConnection();
     }
 
     public ServerImpl getServer() {
@@ -33,6 +30,8 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
     public void onDisconnect() {
         // disconnect the backend server
         getServer().disconnect();
+        // clean up any in-progress backend connection (e.g. during server switch)
+        player.disconnectPendingConnections();
     }
 
     @Override

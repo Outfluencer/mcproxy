@@ -12,9 +12,8 @@ import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurati
 public class ServerGamePacketListener extends ServerCommonPacketListener implements ClientboundGamePacketListener {
 
     public ServerGamePacketListener(ServerImpl server) {
-        super(server);
         assert server.getDecoderProtocol() == Protocol.GAME;
-
+        super(server);
     }
 
     @Override

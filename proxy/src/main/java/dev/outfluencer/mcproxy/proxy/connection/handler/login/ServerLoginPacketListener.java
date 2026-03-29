@@ -17,30 +17,36 @@ import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+
 public class ServerLoginPacketListener implements ClientboundLoginPacketListener {
 
-    private final ConnectionHandle backendHandle;
+    private final ServerImpl server;
     private final PlayerImpl player;
-    private final ServerInfo serverInfo;
+
+    public ServerLoginPacketListener(ServerImpl server) {
+        this.server = server;
+        this.player = server.getPlayer();
+    }
 
     @Override
     public void onConnect() {
+        ServerInfo serverInfo = server.getServerInfo();
         ServerboundHandshakePacket handshake = new ServerboundHandshakePacket(player.getConnection().getProtocolVersion(), serverInfo.getAddress(), serverInfo.getPort(), ServerboundHandshakePacket.ClientIntent.LOGIN);
-        backendHandle.sendPacket(handshake);
-        backendHandle.setProtocol(Protocol.LOGIN);
-        backendHandle.sendPacket(new ServerboundHelloPacket(player.getName(), player.getUuid()));
+        server.sendPacket(handshake);
+        server.getConnection().setProtocol(Protocol.LOGIN);
+        server.sendPacket(new ServerboundHelloPacket(player.getName(), player.getUuid()));
     }
 
     @Override
     public boolean handle(ClientboundLoginDisconnectPacket packet) {
-        backendHandle.close(null);
+        server.disconnect();
         return false;
     }
 
     @Override
     public boolean handle(ClientboundLoginFinishedPacket packet) {
-        ServerImpl server = player.getServer();
+        // get the server the player is currently connected to
+        ServerImpl server = this.server.getPlayer().getServer();
         if (server != null) {
             if (server.isConnected()) {
                 server.disconnect();
@@ -57,7 +63,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
 
     @Override
     public boolean handle(ClientboundLoginCompressionPacket packet) {
-        backendHandle.setCompression(packet.getThreshold());
+        server.getConnection().setCompression(packet.getThreshold());
         return false;
     }
 
@@ -66,8 +72,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
             return;
         }
 
-        ServerImpl server = new ServerImpl(serverInfo, player, backendHandle);
-        backendHandle.setPacketListener(new ServerConfigurationPacketListener(server));
+        server.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
         player.setServer(server);
 
         Protocol playerEncoderProtocol = player.getEncoderProtocol();
@@ -81,7 +86,8 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
             player.sendPacket(new ClientboundStartConfigurationPacket());
             server.getConfigurationTracker().pendingStartConfigAck = true;
         } else {
-            backendHandle.sendPacket(new ServerboundLoginAcknowledgedPacket());
+            assert playerEncoderProtocol == Protocol.CONFIG;
+            server.sendPacket(new ServerboundLoginAcknowledgedPacket());
         }
 
     }
@@ -89,12 +95,12 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     @Override
     public String toString() {
         String name = player != null ? player.getName() : null;
-        return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + backendHandle.getAddress() + "]";
+        return "[" + getClass().getSimpleName() + "|" + (name != null ? name + "|" : "") + server.getConnection().getAddress() + "]";
     }
 
     @Override
     public void onDisconnect() {
-        if(player.getFallbackConnects() != null) {
+        if (!player.isConnectedToServer()) {
             player.connectToNextFallback();
         }
     }

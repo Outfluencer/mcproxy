@@ -38,6 +38,7 @@ public final class MinecraftProxy {
     private static final Logger logger = Logger.getLogger(MinecraftProxy.class.getName());
     @Getter
     private static final MinecraftProxy instance = new MinecraftProxy();
+    @Getter
     private final ProxyConfig config;
     private final EventLoopGroup bossGroup = PipelineUtil.newEventLoopGroup(1);
     private final EventLoopGroup workerGroup = PipelineUtil.newEventLoopGroup(0);
@@ -63,12 +64,20 @@ public final class MinecraftProxy {
                 protected void initChannel(Channel ch) {
                     ch.pipeline().addLast(HandlerNames.SPLITTER, new Varint21FrameDecoder()).addLast(HandlerNames.READ_TIMEOUT, new ReadTimeoutHandler(config.getReadTimeout())).addLast(HandlerNames.DECODER, new PacketDecoder(MinecraftVersion.V26_1, Protocol.HANDSHAKE.serverbound)).addLast(HandlerNames.WRITE_TIMEOUT, new WriteTimeoutHandler(config.getWriteTimeout())).addLast(HandlerNames.PREPENDER, new VarInt21FrameEncoder()).addLast(HandlerNames.ENCODER, new PacketEncoder(MinecraftVersion.V26_1, Protocol.HANDSHAKE.clientbound));
                     ConnectionHandle handle = new ConnectionHandle(ch, false);
-                    PacketHandler handler = new PacketHandler(new PlayerHandshakePacketListener(handle, config), handle);
+                    PacketHandler handler = new PacketHandler(new PlayerHandshakePacketListener(handle), handle);
                     handler.setPacketLimiter(new PacketLimiter(1 << 12, 1 << 25));
                     ch.pipeline().addLast(HandlerNames.PACKET_HANDLER, handler);
                 }
             }).bind(config.getBind(), config.getPort()).syncUninterruptibly().channel();
 
         logger.info("Listening on " + config.getBind() + ":" + config.getPort());
+    }
+
+    public String getName() {
+        return "mcproxy";
+    }
+
+    public String getVersion() {
+        return "0.1";
     }
 }

@@ -24,19 +24,29 @@ import java.util.UUID;
 
 public abstract class Packet<T extends PacketListener> {
 
+    private static void checkRead(int len, int max, String msg) {
+        if (len < 0) {
+            throw new DecoderException(msg + ", negative length " + len);
+        }
+        if (len > max) {
+            throw new DecoderException(msg + ", length" + len + " exeeded maximum " + max);
+        }
+    }
+
     public static int readVarInt(ByteBuf input) {
         return readVarInt(input, 5);
     }
 
     public static String readString(ByteBuf input) {
-        int len = readVarInt(input);
-        return input.readString(len, StandardCharsets.UTF_8);
+        return readString(input, Short.MAX_VALUE);
     }
 
-    public static void writeString(String string, ByteBuf output) {
-        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-        writeVarInt(bytes.length, output);
-        output.writeBytes(bytes);
+    public static String readString(ByteBuf input, int maxLength) {
+        int len = readVarInt(input);
+        checkRead(len, maxLength * 3, "read string bytes");
+        String string = input.readString(len, StandardCharsets.UTF_8);
+        checkRead(len, string.length(), "read string chars");
+        return string;
     }
 
     public static int readVarInt(ByteBuf input, int maxBytes) {
@@ -47,12 +57,70 @@ public abstract class Packet<T extends PacketListener> {
         do {
             in = input.readByte();
             out |= (in & 127) << bytes++ * 7;
-            if (bytes > maxBytes) {
-                throw new DecoderException("VarInt too big");
-            }
+            checkRead(bytes, maxBytes, "varint read");
         } while ((in & 128) == 128);
 
         return out;
+    }
+
+    public static UUID readUUID(ByteBuf input) {
+        return new UUID(input.readLong(), input.readLong());
+    }
+
+    public static Property[] readProperties(ByteBuf buf) {
+        int size = readVarInt(buf);
+        checkRead(size, buf.readableBytes(), "properties read");
+        Property[] properties = new Property[size];
+        for (int j = 0; j < properties.length; j++) {
+            String name = readString(buf);
+            String value = readString(buf);
+            if (buf.readBoolean()) {
+                properties[j] = new Property(name, value, readString(buf));
+            } else {
+                properties[j] = new Property(name, value);
+            }
+        }
+        return properties;
+    }
+
+    public static TextComponent readComponent(ByteBuf byteBuf, int version) {
+        TextComponentCodec codec = Util.textComponentCodecByVersion(version);
+        return codec.deserialize(readTag(byteBuf, version));
+    }
+
+    public static NbtTag readTag(ByteBuf input, int protocolVersion, NbtReadTracker limiter) {
+        DataInputStream in = new DataInputStream(new ByteBufInputStream(input));
+        try {
+            byte type = in.readByte();
+            if (type == 0) {
+                return null;
+            } else {
+                return new NbtReader_v1_12().read(NbtType.byId(type), in, limiter);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Exception reading tag", ex);
+        }
+    }
+
+    public static NbtTag readTag(ByteBuf input, int protocolVersion) {
+        return readTag(input, protocolVersion, new NbtReadTracker(1 << 21));
+    }
+
+    public static int[] readVarIntArray(ByteBuf buf) {
+        int len = readVarInt(buf);
+        checkRead(len, buf.readableBytes(), "properties read");
+        int[] ret = new int[len];
+
+        for (int i = 0; i < len; i++) {
+            ret[i] = readVarInt(buf);
+        }
+        return ret;
+    }
+
+    public static void writeString(String string, ByteBuf output) {
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+        writeVarInt(bytes.length, output);
+        output.writeBytes(bytes);
     }
 
     public static void writeVarInt(int value, final ByteBuf output) {
@@ -66,10 +134,6 @@ public abstract class Packet<T extends PacketListener> {
     public static void writeUUID(UUID value, ByteBuf output) {
         output.writeLong(value.getMostSignificantBits());
         output.writeLong(value.getLeastSignificantBits());
-    }
-
-    public static UUID readUUID(ByteBuf input) {
-        return new UUID(input.readLong(), input.readLong());
     }
 
     public static void writeProperties(Property[] properties, ByteBuf buf) {
@@ -90,46 +154,9 @@ public abstract class Packet<T extends PacketListener> {
         }
     }
 
-    public static Property[] readProperties(ByteBuf buf) {
-        Property[] properties = new Property[readVarInt(buf)];
-        for (int j = 0; j < properties.length; j++) {
-            String name = readString(buf);
-            String value = readString(buf);
-            if (buf.readBoolean()) {
-                properties[j] = new Property(name, value, readString(buf));
-            } else {
-                properties[j] = new Property(name, value);
-            }
-        }
-        return properties;
-    }
-
-    public static TextComponent readComponent(ByteBuf byteBuf, int version) {
-        TextComponentCodec codec = Util.textComponentCodecByVersion(version);
-        return codec.deserialize(readTag(byteBuf, version));
-    }
-
     public static void writeBaseComponent(TextComponent message, ByteBuf buf, int version) {
         TextComponentCodec codec = Util.textComponentCodecByVersion(version);
         writeTag(codec.serializeNbtTree(message), buf, version);
-    }
-
-    public static NbtTag readTag(ByteBuf input, int protocolVersion) {
-        return readTag(input, protocolVersion, new NbtReadTracker(1 << 21));
-    }
-
-    public static NbtTag readTag(ByteBuf input, int protocolVersion, NbtReadTracker limiter) {
-        DataInputStream in = new DataInputStream(new ByteBufInputStream(input));
-        try {
-            byte type = in.readByte();
-            if (type == 0) {
-                return null;
-            } else {
-                return new NbtReader_v1_12().read(NbtType.byId(type), in, limiter);
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException("Exception reading tag", ex);
-        }
     }
 
     public static void writeTag(NbtTag tag, ByteBuf output, int protocolVersion) {
@@ -140,17 +167,6 @@ public abstract class Packet<T extends PacketListener> {
         } catch (IOException ex) {
             throw new RuntimeException("Exception writing tag", ex);
         }
-    }
-
-    public static int[] readVarIntArray(ByteBuf buf) {
-        int len = readVarInt(buf);
-        int[] ret = new int[len];
-
-        for (int i = 0; i < len; i++) {
-            ret[i] = readVarInt(buf);
-        }
-
-        return ret;
     }
 
     public static void writeVarIntArray(int[] arr, ByteBuf buf) {

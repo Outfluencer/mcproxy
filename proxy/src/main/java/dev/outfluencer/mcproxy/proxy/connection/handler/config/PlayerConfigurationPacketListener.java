@@ -11,8 +11,8 @@ import dev.outfluencer.mcproxy.proxy.connection.handler.game.PlayerGamePacketLis
 public class PlayerConfigurationPacketListener extends PlayerCommonPacketListener implements ServerboundConfigurationPacketListener {
 
     public PlayerConfigurationPacketListener(PlayerImpl player) {
-        super(player);
         assert player.getDecoderProtocol() == Protocol.CONFIG;
+        super(player);
     }
 
     @Override
