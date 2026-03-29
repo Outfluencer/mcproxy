@@ -20,6 +20,10 @@
         </dependency>
         <dependency>
             <groupId>dev.outfluencer</groupId>
+            <artifactId>event</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.outfluencer</groupId>
             <artifactId>networking</artifactId>
         </dependency>
         <dependency>

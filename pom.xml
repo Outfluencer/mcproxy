@@ -13,6 +13,7 @@
         <module>log</module>
         <module>config</module>
         <module>api</module>
+        <module>event</module>
         <module>networking</module>
         <module>proxy</module>
         <module>launcher</module>
@@ -26,6 +27,7 @@
         <gson.version>2.13.2</gson.version>
         <netty.version>4.2.10.Final</netty.version>
         <lombok.version>1.18.44</lombok.version>
+        <lambdaevents.version>2.4.2</lambdaevents.version>
         <junit.version>5.11.4</junit.version>
     </properties>
 
@@ -66,6 +68,18 @@
                 <groupId>dev.outfluencer</groupId>
                 <artifactId>proxy</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.outfluencer</groupId>
+                <artifactId>event</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- LambdaEvents -->
+            <dependency>
+                <groupId>net.lenni0451</groupId>
+                <artifactId>LambdaEvents</artifactId>
+                <version>${lambdaevents.version}</version>
             </dependency>
 
             <!-- Gson -->
