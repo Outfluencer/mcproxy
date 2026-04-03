@@ -1,0 +1,6 @@
+{
+  "name": "SamplePlugin",
+  "version": "1.0",
+  "mainClass": "dev.outfluencer.mcproxy.sample.SamplePlugin",
+  "authors": ["Outfluencer"]
+}

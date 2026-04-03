@@ -1,4 +1,4 @@
-package dev.outfluencer.mcproxy.config;
+package dev.outfluencer.mcproxy.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

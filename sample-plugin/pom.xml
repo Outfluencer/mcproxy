@@ -10,13 +10,14 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>event</artifactId>
-    <name>mcproxy - Event</name>
+    <artifactId>sample-plugin</artifactId>
+    <name>mcproxy - Sample Plugin</name>
 
     <dependencies>
         <dependency>
-            <groupId>net.lenni0451</groupId>
-            <artifactId>LambdaEvents</artifactId>
+            <groupId>dev.outfluencer</groupId>
+            <artifactId>api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

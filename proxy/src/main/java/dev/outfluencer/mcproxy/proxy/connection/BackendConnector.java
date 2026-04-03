@@ -1,6 +1,8 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
-import dev.outfluencer.mcproxy.config.ServerInfo;
+import dev.outfluencer.mcproxy.api.ProxyServer;
+import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
+import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
 import dev.outfluencer.mcproxy.networking.netty.PipelineUtil;
@@ -46,6 +48,7 @@ public class BackendConnector {
                 ServerImpl server = new ServerImpl(serverInfo, player, backendHandle);
                 player.addPendingConnection(server);
                 ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new ServerLoginPacketListener(server), backendHandle));
+                ProxyServer.getInstance().getEventManager().fire(new ChannelInitializedEvent(ch, ChannelInitializedEvent.Type.BACKEND));
             }
         }).connect(serverInfo.getSocketAddress()).addListener((ChannelFutureListener) channelFuture -> {
             if (!channelFuture.isSuccess()) {

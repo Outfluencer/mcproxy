@@ -1,5 +1,6 @@
-package dev.outfluencer.mcproxy.config;
+package dev.outfluencer.mcproxy.proxy.config;
 
+import dev.outfluencer.mcproxy.api.ServerInfo;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -16,9 +16,8 @@ public class EventManager {
             Field implLookup = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             implLookup.setAccessible(true);
             lookup = (MethodHandles.Lookup) implLookup.get(null);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             lookup = MethodHandles.lookup();
-            e.printStackTrace();
         }
 
         lambdaManager = LambdaManager.basic(new LambdaMetaFactoryGenerator(lookup));

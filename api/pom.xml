@@ -19,6 +19,14 @@
             <artifactId>networking</artifactId>
         </dependency>
         <dependency>
+            <groupId>dev.outfluencer</groupId>
+            <artifactId>event</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.lenni0451</groupId>
+            <artifactId>LambdaEvents</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
         </dependency>

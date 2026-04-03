@@ -1,11 +1,12 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Server;
-import dev.outfluencer.mcproxy.config.ServerInfo;
+import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -58,6 +59,19 @@ public class ServerImpl implements Server {
     public SocketAddress getAddress() {
         return connection.getAddress();
     }
+
+    @Getter
+    private final Unsafe unsafe = new Unsafe() {
+        @Override
+        public Channel getHandle() {
+            return connection.getChannel();
+        }
+
+        @Override
+        public void sendPacket(Packet<?> packet) {
+            connection.sendPacket(packet);
+        }
+    };
 
     public static class ConfigurationTracker {
         public int pendingKnownPacks;

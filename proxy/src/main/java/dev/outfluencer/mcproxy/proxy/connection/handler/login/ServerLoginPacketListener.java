@@ -1,7 +1,8 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
-import dev.outfluencer.mcproxy.config.ServerInfo;
-import dev.outfluencer.mcproxy.networking.ConnectionHandle;
+import dev.outfluencer.mcproxy.api.ProxyServer;
+import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
+import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
@@ -15,11 +16,11 @@ import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
-import lombok.RequiredArgsConstructor;
 
 
 public class ServerLoginPacketListener implements ClientboundLoginPacketListener {
 
+    private final ProxyServer proxy = ProxyServer.getInstance();
     private final ServerImpl server;
     private final PlayerImpl player;
 
@@ -64,6 +65,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     @Override
     public boolean handle(ClientboundLoginCompressionPacket packet) {
         server.getConnection().setCompression(packet.getThreshold());
+        proxy.getEventManager().fire(new CompressionChangeEvent(packet.getThreshold(), server));
         return false;
     }
 

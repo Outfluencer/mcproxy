@@ -1,12 +1,10 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler;
 
-import dev.outfluencer.mcproxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
-import dev.outfluencer.mcproxy.networking.netty.QuietException;
-import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import dev.outfluencer.mcproxy.proxy.connection.handler.login.PlayerLoginPacketListener;
 import lombok.RequiredArgsConstructor;
 

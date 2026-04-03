@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
+import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
@@ -33,6 +34,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     public void setCompression(int threshold) {
         player.sendPacket(new ClientboundLoginCompressionPacket(threshold));
         handle.setCompression(threshold);
+        proxy.getEventManager().fire(new CompressionChangeEvent(threshold, player));
     }
 
     public void finishPlayerLogin() {

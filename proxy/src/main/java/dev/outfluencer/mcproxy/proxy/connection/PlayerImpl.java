@@ -1,7 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
 import dev.outfluencer.mcproxy.api.connection.Player;
-import dev.outfluencer.mcproxy.config.ServerInfo;
+import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -9,6 +9,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCom
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
+import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
@@ -54,6 +55,7 @@ public class PlayerImpl implements Player {
     public void connect(ServerInfo serverInfo) {
         new BackendConnector(this, serverInfo).connect();
     }
+
     public void fallback() {
         assert fallbackConnects == null;
         fallbackConnects = MinecraftProxy.getInstance().getConfig().getFallbackServers();
@@ -128,4 +130,18 @@ public class PlayerImpl implements Player {
     public boolean isConnectedToServer() {
         return server != null && server.isConnected();
     }
+
+    @Getter
+    private final Unsafe unsafe = new Unsafe() {
+        @Override
+        public Channel getHandle() {
+            return connection.getChannel();
+        }
+
+        @Override
+        public void sendPacket(Packet<?> packet) {
+            connection.sendPacket(packet);
+        }
+    };
+
 }

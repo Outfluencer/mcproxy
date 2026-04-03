@@ -1,6 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler;
 
-import dev.outfluencer.mcproxy.config.ProxyConfig;
+import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.ServerStatus;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;

@@ -1,7 +1,10 @@
 package dev.outfluencer.mcproxy.proxy;
 
+import dev.outfluencer.mcproxy.api.ProxyServer;
+import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
 import dev.outfluencer.mcproxy.config.ConfigLoader;
-import dev.outfluencer.mcproxy.config.ProxyConfig;
+import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
+import dev.outfluencer.mcproxy.event.EventManager;
 import dev.outfluencer.mcproxy.log.ColorLogHandler;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
@@ -16,6 +19,7 @@ import dev.outfluencer.mcproxy.networking.netty.handler.Varint21FrameDecoder;
 import dev.outfluencer.mcproxy.networking.protocol.registry.MinecraftVersion;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.handler.PlayerHandshakePacketListener;
+import dev.outfluencer.mcproxy.proxy.plugin.PluginLoader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -29,7 +33,7 @@ import lombok.SneakyThrows;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
-public final class MinecraftProxy {
+public final class MinecraftProxy extends ProxyServer {
 
     static {
         ColorLogHandler.install();
@@ -40,6 +44,10 @@ public final class MinecraftProxy {
     private static final MinecraftProxy instance = new MinecraftProxy();
     @Getter
     private final ProxyConfig config;
+    @Getter
+    private final PluginLoader pluginLoader;
+    @Getter
+    private final EventManager eventManager;
     private final EventLoopGroup bossGroup = PipelineUtil.newEventLoopGroup(1);
     private final EventLoopGroup workerGroup = PipelineUtil.newEventLoopGroup(0);
     private final Channel serverChannl;
@@ -47,8 +55,13 @@ public final class MinecraftProxy {
 
     @SneakyThrows
     private MinecraftProxy() {
+        ProxyServer.setInstance(this);
+        eventManager = new EventManager();
         config = ConfigLoader.load(Path.of("config.json"), ProxyConfig.class).check();
         logger.info("Loaded configuration from config.json");
+
+        pluginLoader = new PluginLoader(Path.of("plugins"));
+        pluginLoader.loadPlugins();
 
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
         if (System.getProperty("io.netty.allocator.type") == null) {
@@ -67,10 +80,16 @@ public final class MinecraftProxy {
                     PacketHandler handler = new PacketHandler(new PlayerHandshakePacketListener(handle), handle);
                     handler.setPacketLimiter(new PacketLimiter(1 << 12, 1 << 25));
                     ch.pipeline().addLast(HandlerNames.PACKET_HANDLER, handler);
+                    eventManager.fire(new ChannelInitializedEvent(ch, ChannelInitializedEvent.Type.FRONTEND));
                 }
             }).bind(config.getBind(), config.getPort()).syncUninterruptibly().channel();
-
         logger.info("Listening on " + config.getBind() + ":" + config.getPort());
+
+        pluginLoader.enablePlugins();
+    }
+
+    public void stop() {
+        pluginLoader.disablePlugins();
     }
 
     public String getName() {
