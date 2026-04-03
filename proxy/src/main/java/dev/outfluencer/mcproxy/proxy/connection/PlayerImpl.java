@@ -1,7 +1,7 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
-import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.api.ServerInfo;
+import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -40,10 +40,20 @@ public class PlayerImpl implements Player {
 
     @Override
     public void disconnect(String message) {
+        if (message == null) {
+            disconnect((TextComponent) null);
+        } else {
+            disconnect(TextComponent.of(message));
+        }
+    }
+
+    @Override
+    public void disconnect(TextComponent message) {
         switch (connection.getEncoderProtocol()) {
             case HANDSHAKE, STATUS -> connection.close(null);
-            case LOGIN -> connection.close(new ClientboundLoginDisconnectPacket(TextComponent.of(message)));
-            case CONFIG, GAME -> connection.close(new ClientboundCommonDisconnectPacket(TextComponent.of(message)));
+            case LOGIN -> connection.close(message != null ? new ClientboundLoginDisconnectPacket(message) : null);
+            case CONFIG, GAME ->
+                    connection.close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
         }
     }
 

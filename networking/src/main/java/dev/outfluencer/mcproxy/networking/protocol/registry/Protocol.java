@@ -13,11 +13,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundConfi
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import java.util.Map;
 
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.*;
 import dev.outfluencer.mcproxy.networking.protocol.packets.status.ClientboundPongResponsePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.status.ClientboundStatusResponsePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.status.ServerboundPingRequest;
@@ -68,6 +64,11 @@ public enum Protocol {
                 map(MinecraftVersion.V1_21_11, 0x00)
             );
             serverbound.registerPacket(
+                ServerboundLoginEncryptionResponsePacket.class,
+                ServerboundLoginEncryptionResponsePacket::new,
+                map(MinecraftVersion.V1_21_11, 0x01)
+            );
+            serverbound.registerPacket(
                 ServerboundLoginAcknowledgedPacket.class,
                 ServerboundLoginAcknowledgedPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x03)
@@ -77,6 +78,11 @@ public enum Protocol {
                 ClientboundLoginDisconnectPacket.class,
                 ClientboundLoginDisconnectPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x00)
+            );
+            clientbound.registerPacket(
+                ClientboundLoginEncryptionRequestPacket.class,
+                ClientboundLoginEncryptionRequestPacket::new,
+                map(MinecraftVersion.V1_21_11, 0x01)
             );
             clientbound.registerPacket(
                 ClientboundLoginFinishedPacket.class,

@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.DecoderException;
+import io.netty.handler.codec.EncoderException;
 import net.lenni0451.mcstructs.nbt.NbtTag;
 import net.lenni0451.mcstructs.nbt.NbtType;
 import net.lenni0451.mcstructs.nbt.io.NbtReadTracker;
@@ -47,6 +48,20 @@ public abstract class Packet<T extends PacketListener> {
         String string = input.readString(len, StandardCharsets.UTF_8);
         checkRead(len, string.length(), "read string chars");
         return string;
+    }
+
+    public static byte[] readArray(ByteBuf buf)
+    {
+        return readArray( buf, buf.readableBytes() );
+    }
+
+    public static byte[] readArray(ByteBuf buf, int limit)
+    {
+        int len = readVarInt( buf );
+        checkRead(len, limit, "read byte array");
+        byte[] ret = new byte[ len ];
+        buf.readBytes( ret );
+        return ret;
     }
 
     public static int readVarInt(ByteBuf input, int maxBytes) {
@@ -175,7 +190,11 @@ public abstract class Packet<T extends PacketListener> {
             writeVarInt(value, buf);
         }
     }
-
+    public static void writeArray(byte[] b, ByteBuf buf)
+    {
+        writeVarInt( b.length, buf );
+        buf.writeBytes( b );
+    }
 
     public abstract void read(ByteBuf byteBuf, int version);
 

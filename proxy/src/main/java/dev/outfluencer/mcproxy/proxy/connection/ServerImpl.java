@@ -10,6 +10,7 @@ import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.lenni0451.mcstructs.text.TextComponent;
 
 import java.net.SocketAddress;
 
@@ -52,6 +53,11 @@ public class ServerImpl implements Server {
 
     @Override
     public void disconnect(String message) {
+        disconnect();
+    }
+
+    @Override
+    public void disconnect(TextComponent message) {
         disconnect();
     }
 

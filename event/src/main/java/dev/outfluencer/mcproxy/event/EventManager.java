@@ -2,12 +2,16 @@ package dev.outfluencer.mcproxy.event;
 
 import net.lenni0451.lambdaevents.LambdaManager;
 import net.lenni0451.lambdaevents.generator.LambdaMetaFactoryGenerator;
+import net.lenni0451.lambdaevents.utils.ThrowingExceptionHandler;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 
 public class EventManager {
-
+    private static final Logger logger = Logger.getLogger(EventManager.class.getName());
     private final LambdaManager lambdaManager;
 
     {
@@ -21,6 +25,7 @@ public class EventManager {
         }
 
         lambdaManager = LambdaManager.basic(new LambdaMetaFactoryGenerator(lookup));
+        lambdaManager.setExceptionHandler(new ThrowingExceptionHandler());
     }
 
     public void register(Object listener) {
@@ -35,7 +40,11 @@ public class EventManager {
         }
     }
 
-    public void fire(Object event) {
-        lambdaManager.call(event);
+    public <T> T fire(T event) {
+        return lambdaManager.call(event);
+    }
+
+    public <T extends AsyncEvent> void fireAsync(T event, BiConsumer<T, Throwable> callback, Executor executor) {
+        fire(event).whenComplete((BiConsumer<AsyncEvent, Throwable>) callback, executor);
     }
 }

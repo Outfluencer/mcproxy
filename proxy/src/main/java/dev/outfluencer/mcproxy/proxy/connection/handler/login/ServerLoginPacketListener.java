@@ -6,12 +6,7 @@ import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginPacketListener;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.*;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
@@ -67,6 +62,11 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         server.getConnection().setCompression(packet.getThreshold());
         proxy.getEventManager().fire(new CompressionChangeEvent(packet.getThreshold(), server));
         return false;
+    }
+
+    @Override
+    public boolean handle(ClientboundLoginEncryptionRequestPacket clientboundLoginEncryptionRequestPacket) {
+        throw new UnsupportedOperationException("server is in online mode");
     }
 
     public void updatePlayerServer(ClientboundLoginFinishedPacket packet) {

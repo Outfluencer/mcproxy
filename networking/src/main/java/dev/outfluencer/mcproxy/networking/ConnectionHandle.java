@@ -2,6 +2,8 @@ package dev.outfluencer.mcproxy.networking;
 
 import dev.outfluencer.mcproxy.networking.netty.ClearSignal;
 import dev.outfluencer.mcproxy.networking.netty.HandlerNames;
+import dev.outfluencer.mcproxy.networking.netty.handler.CipherDecoder;
+import dev.outfluencer.mcproxy.networking.netty.handler.CipherEncoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.CompressionDecoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.CompressionEncoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.PacketDecoder;
@@ -19,9 +21,16 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.VoidChannelPromise;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import net.lenni0451.mcstructs.text.TextComponent;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.net.SocketAddress;
+import java.security.GeneralSecurityException;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public final class ConnectionHandle {
 
@@ -101,6 +110,18 @@ public final class ConnectionHandle {
         }
         channel.flush();
         channel.close();
+    }
+
+    @SneakyThrows
+    public void setEncryption(SecretKey key) {
+        assert channel.eventLoop().inEventLoop();
+        Cipher decrypt = Cipher.getInstance("AES/CFB8/NoPadding");
+        decrypt.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(key.getEncoded()));
+        channel.pipeline().addBefore(HandlerNames.SPLITTER, HandlerNames.DECRYPT, new CipherDecoder(decrypt));
+
+        Cipher encrypt = Cipher.getInstance("AES/CFB8/NoPadding");
+        encrypt.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(key.getEncoded()));
+        channel.pipeline().addBefore(HandlerNames.PREPENDER, HandlerNames.ENCRYPT, new CipherEncoder(encrypt));
     }
 
     public void setCompression(int threshold) {
@@ -203,6 +224,17 @@ public final class ConnectionHandle {
             return;
         }
         channel.config().setAutoRead(autoRead);
+    }
+
+    public <T> BiConsumer<T, Throwable> eventCallback(Consumer<T> consumer) {
+        assert channel.eventLoop().inEventLoop();
+        return (t, throwable) -> {
+            if (throwable != null) {
+                channel.pipeline().fireExceptionCaught(throwable);
+                return;
+            }
+            consumer.accept(t);
+        };
     }
 
 }

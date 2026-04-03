@@ -8,4 +8,6 @@ public interface ServerboundLoginPacketListener extends PacketListener {
     boolean handle(ServerboundHelloPacket packet);
 
     boolean handle(ServerboundLoginAcknowledgedPacket packet);
+
+    boolean handle(ServerboundLoginEncryptionResponsePacket serverboundLoginEncryptionResponsePacket);
 }

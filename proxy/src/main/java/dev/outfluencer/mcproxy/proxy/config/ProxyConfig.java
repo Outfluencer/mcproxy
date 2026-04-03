@@ -28,6 +28,7 @@ public class ProxyConfig {
     private int writeTimeout = 30;
     private int connectionThrottleLimit = 10;
     private long connectionThrottleMillis = 3000;
+    private boolean online;
 
     public ProxyConfig check() {
         Set<String> seen = new HashSet<>();
