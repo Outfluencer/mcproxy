@@ -15,7 +15,7 @@ public abstract class Plugin {
     public void init(PluginDescription description, Logger logger) {
         this.description = description;
         this.logger = logger;
-        this.pluginFolder = Path.of(description.name());
+        this.pluginFolder = Path.of("plugins", description.name());
     }
 
     public abstract void onEnable();
