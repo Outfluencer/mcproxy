@@ -11,6 +11,7 @@ import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import io.netty.channel.Channel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
 
@@ -25,7 +26,9 @@ public class PlayerImpl implements Player {
 
     private final ConnectionHandle connection;
 
+    @NonNull
     private String name;
+    @NonNull
     private UUID uuid;
     private ServerImpl server;
     private List<ServerImpl> pendingConnections;

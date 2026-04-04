@@ -99,6 +99,11 @@ public enum Protocol {
     CONFIG {
         {
             clientbound.registerPacket(
+                ClientboundCommonDisconnectPacket.class,
+                ClientboundCommonDisconnectPacket::new,
+                map(MinecraftVersion.V1_21_11, 0x02)
+            );
+            clientbound.registerPacket(
                 ClientboundFinishConfigurationPacket.class,
                 ClientboundFinishConfigurationPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x03)

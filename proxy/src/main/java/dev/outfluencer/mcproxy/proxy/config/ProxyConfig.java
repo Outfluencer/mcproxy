@@ -28,7 +28,7 @@ public class ProxyConfig {
     private int writeTimeout = 30;
     private int connectionThrottleLimit = 10;
     private long connectionThrottleMillis = 3000;
-    private boolean online;
+    private OnlineMode online = OnlineMode.AUTH;
 
     public ProxyConfig check() {
         Set<String> seen = new HashSet<>();
@@ -68,4 +68,17 @@ public class ProxyConfig {
         list.add(new ServerInfo("lobby-2", "127.0.0.1", 25566, 1, true, null));
         return list;
     }
+
+    public enum OnlineMode {
+        AUTH, ENCRYPT, OFFLINE;
+
+        public boolean encyrpt() {
+            return this == AUTH || this == ENCRYPT;
+        }
+
+        public boolean auth() {
+            return this == AUTH;
+        }
+    }
+
 }

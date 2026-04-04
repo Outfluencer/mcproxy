@@ -26,12 +26,12 @@ public class CryptUtil {
         }
     }
 
-    public static ClientboundLoginEncryptionRequestPacket encryptRequest() {
+    public static ClientboundLoginEncryptionRequestPacket encryptRequest(boolean auth) {
         String hash = Long.toString(ThreadLocalRandom.current().nextLong(), 16);
         byte[] pubKey = keys.getPublic().getEncoded();
         byte[] verify = new byte[4];
         ThreadLocalRandom.current().nextBytes(verify);
-        return new ClientboundLoginEncryptionRequestPacket(hash, pubKey, verify, true);
+        return new ClientboundLoginEncryptionRequestPacket(hash, pubKey, verify, auth);
     }
 
 

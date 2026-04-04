@@ -21,6 +21,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.VoidChannelPromise;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import net.lenni0451.mcstructs.text.TextComponent;
 
@@ -229,12 +230,24 @@ public final class ConnectionHandle {
     public <T> BiConsumer<T, Throwable> eventCallback(Consumer<T> consumer) {
         assert channel.eventLoop().inEventLoop();
         return (t, throwable) -> {
-            if (throwable != null) {
-                channel.pipeline().fireExceptionCaught(throwable);
+            if (closed) {
                 return;
             }
-            consumer.accept(t);
+            if (throwable != null) {
+                fireException(throwable);
+                return;
+            }
+            try {
+                consumer.accept(t);
+            } catch (Throwable throwable2) {
+                fireException(throwable2);
+            }
         };
+    }
+
+    public void fireException(@NonNull Throwable throwable) {
+        assert channel.eventLoop().inEventLoop();
+        channel.pipeline().fireExceptionCaught(throwable);
     }
 
 }
