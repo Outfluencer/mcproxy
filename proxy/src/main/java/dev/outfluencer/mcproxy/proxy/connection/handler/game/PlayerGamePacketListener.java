@@ -13,7 +13,6 @@ public class PlayerGamePacketListener extends PlayerCommonPacketListener impleme
     public PlayerGamePacketListener(PlayerImpl player) {
         assert player.getDecoderProtocol() == Protocol.GAME;
         super(player);
-
     }
 
     @Override
