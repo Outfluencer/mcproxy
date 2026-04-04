@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>sample-plugin</artifactId>
-    <name>mcproxy - Sample Plugin</name>
+    <name>sample-plugin</name>
 
     <dependencies>
         <dependency>

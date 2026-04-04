@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>event</artifactId>
-    <name>mcproxy - Event</name>
+    <name>event</name>
 
     <dependencies>
         <dependency>

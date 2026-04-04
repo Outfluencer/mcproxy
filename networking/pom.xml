@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>networking</artifactId>
-    <name>mcproxy - Networking</name>
+    <name>networking</name>
 
     <dependencies>
         <dependency>

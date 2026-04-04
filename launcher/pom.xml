@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>launcher</artifactId>
-    <name>mcproxy - Launcher</name>
+    <name>launcher</name>
 
     <dependencies>
         <!-- Proxy and its transitive deps are bundled into the launcher fat JAR -->

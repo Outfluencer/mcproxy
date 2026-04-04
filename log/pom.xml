@@ -11,6 +11,6 @@
     </parent>
 
     <artifactId>log</artifactId>
-    <name>mcproxy - Log</name>
+    <name>log</name>
 
 </project>
