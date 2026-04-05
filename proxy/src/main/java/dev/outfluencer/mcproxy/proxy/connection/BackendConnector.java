@@ -40,11 +40,14 @@ public class BackendConnector {
                 ch.pipeline()
                     .addLast(HandlerNames.SPLITTER, new Varint21FrameDecoder())
                     .addLast(HandlerNames.READ_TIMEOUT, new ReadTimeoutHandler(readTimeout))
-                    .addLast(HandlerNames.DECODER, new PacketDecoder(protocolVersion, Protocol.HANDSHAKE.clientbound))
+                    .addLast(HandlerNames.DECODER, new PacketDecoder(0, Protocol.HANDSHAKE.clientbound))
                     .addLast(HandlerNames.WRITE_TIMEOUT, new WriteTimeoutHandler(writeTimeout))
                     .addLast(HandlerNames.PREPENDER, new VarInt21FrameEncoder())
-                    .addLast(HandlerNames.ENCODER, new PacketEncoder(protocolVersion, Protocol.HANDSHAKE.serverbound));
+                    .addLast(HandlerNames.ENCODER, new PacketEncoder(0, Protocol.HANDSHAKE.serverbound));
+
                 ConnectionHandle backendHandle = new ConnectionHandle(ch, true);
+                backendHandle.setProtocolVersion(protocolVersion);
+
                 ServerImpl server = new ServerImpl(serverInfo, player, backendHandle);
                 player.addPendingConnection(server);
                 ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new ServerLoginPacketListener(server), backendHandle));

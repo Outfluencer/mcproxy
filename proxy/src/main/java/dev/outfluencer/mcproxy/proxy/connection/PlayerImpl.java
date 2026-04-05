@@ -6,6 +6,7 @@ import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class PlayerImpl implements Player {
 
     private final ConnectionHandle connection;
+    private final ServerboundHandshakePacket handshake;
 
     @NonNull
     private String name;
@@ -33,12 +35,14 @@ public class PlayerImpl implements Player {
     private ServerImpl server;
     private List<ServerImpl> pendingConnections;
     private List<ServerInfo> fallbackConnects;
+    private LoginResult loginResult;
 
 
-    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid) {
+    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid, ServerboundHandshakePacket handshake) {
         this.connection = connectionHandle;
         this.name = name;
         this.uuid = uuid;
+        this.handshake = handshake;
     }
 
     @Override

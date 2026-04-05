@@ -2,9 +2,16 @@ package dev.outfluencer.mcproxy.sample;
 
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
+import dev.outfluencer.mcproxy.api.events.ProxyMotdEvent;
 import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
 import dev.outfluencer.mcproxy.api.plugin.Plugin;
+import dev.outfluencer.mcproxy.api.util.ComponentBuilder;
 import net.lenni0451.lambdaevents.EventHandler;
+import net.lenni0451.mcstructs.text.Style;
+import net.lenni0451.mcstructs.text.TextComponent;
+import net.lenni0451.mcstructs.text.utils.TextComponentBuilder;
+
+import java.awt.*;
 
 public class SamplePlugin extends Plugin {
 
@@ -22,6 +29,11 @@ public class SamplePlugin extends Plugin {
     @EventHandler
     public void onCompression(CompressionChangeEvent event) {
         getLogger().info(String.valueOf(event));
+    }
+
+    @EventHandler
+    public void onMotd(ProxyMotdEvent event) {
+        event.getServerStatus().setDescription(ComponentBuilder.gradient("mcproxy server", Color.red, Color.blue).bold().build());
     }
 
     @Override

@@ -6,6 +6,7 @@ import dev.outfluencer.mcproxy.api.events.PlayerAuthenticateEvent;
 import dev.outfluencer.mcproxy.api.events.PlayerLoginEvent;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
+import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginEncryptionRequestPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
@@ -44,6 +45,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     private final MinecraftProxy proxy = MinecraftProxy.getInstance();
     private final ProxyConfig.OnlineMode online = proxy.getConfig().getOnline();
     private final ConnectionHandle handle;
+    private final ServerboundHandshakePacket handshake;
     private State state = State.AWAIT_HELLO;
     private PlayerImpl player;
     private ClientboundLoginEncryptionRequestPacket encryptionRequest;
@@ -51,13 +53,13 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     @Override
     public boolean handle(ServerboundHelloPacket packet) {
         stateTransition(State.AWAIT_HELLO, State.RECEIVED_HELLO, "Unexpected ServerboundHelloPacket");
-        player = new PlayerImpl(handle, packet.getName(), packet.getUuid());
+        player = new PlayerImpl(handle, packet.getName(), packet.getUuid(), handshake);
         proxy.getEventManager().fireAsync(new PlayerLoginEvent(player), handle.eventCallback(event -> {
             if (event.isCancelled()) {
                 player.disconnect(event.getDisconnectMessage());
                 return;
             }
-            if (online.encyrpt()) {
+            if (online.encrypt()) {
                 state = State.AWAIT_ENCRYPTION_RESPONSE;
                 player.sendPacket(encryptionRequest = CryptUtil.encryptRequest(online.auth()));
             } else {
@@ -103,6 +105,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
                 LoginResult loginResult = gson.fromJson(response.body(), LoginResult.class);
                 player.setName(loginResult.getName());
                 player.setUuid(UUID.fromString(loginResult.getId().replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")));
+                player.setLoginResult(loginResult);
                 finishPlayerLogin();
             }, executor).exceptionallyAsync(throwable -> {
                 handle.fireException(throwable);

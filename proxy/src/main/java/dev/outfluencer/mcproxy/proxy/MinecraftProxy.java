@@ -71,16 +71,25 @@ public final class MinecraftProxy extends ProxyServer {
     private boolean shuttingDown = false;
 
 
+    @Override
     @Locked.Read("playerLock")
     public Collection<Player> getPlayers() {
         return Collections.unmodifiableCollection(playersByUuid.values());
     }
 
+    @Override
+    @Locked.Read("playerLock")
+    public int getOnlinePlayerCount() {
+        return playersByUuid.size();
+    }
+
+    @Override
     @Locked.Read("playerLock")
     public PlayerImpl getPlayer(UUID uuid) {
         return playersByUuid.get(uuid);
     }
 
+    @Override
     @Locked.Read("playerLock")
     public PlayerImpl getPlayer(String name) {
         return playersByName.get(name);

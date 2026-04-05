@@ -3,19 +3,25 @@ package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
 import dev.outfluencer.mcproxy.api.ServerInfo;
+import dev.outfluencer.mcproxy.networking.Util;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.*;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
+import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
+import dev.outfluencer.mcproxy.proxy.connection.LoginResult;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.config.ServerConfigurationPacketListener;
 
+import java.net.InetSocketAddress;
+
 
 public class ServerLoginPacketListener implements ClientboundLoginPacketListener {
 
-    private final ProxyServer proxy = ProxyServer.getInstance();
+    private final MinecraftProxy proxy = MinecraftProxy.getInstance();
     private final ServerImpl server;
     private final PlayerImpl player;
 
@@ -26,9 +32,18 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
 
     @Override
     public void onConnect() {
-        ServerInfo serverInfo = server.getServerInfo();
-        ServerboundHandshakePacket handshake = new ServerboundHandshakePacket(player.getConnection().getProtocolVersion(), serverInfo.getAddress(), serverInfo.getPort(), ServerboundHandshakePacket.ClientIntent.LOGIN);
-        server.sendPacket(handshake);
+        ServerboundHandshakePacket original = player.getHandshake();
+        ServerboundHandshakePacket handshakeCopy = new ServerboundHandshakePacket(original.getVersion(), original.getHostName(), original.getPort(), original.getClientIntent());
+        if(proxy.getConfig().getDataForwarding() == ProxyConfig.DataForwarding.BUNGEECORD && player.getAddress() instanceof InetSocketAddress inetSocketAddress) {
+            String newHost = handshakeCopy.getHostName() + "\00" + Util.sanitizeAddress( inetSocketAddress ) + "\00" + player.getLoginResult().getId();
+            LoginResult result = player.getLoginResult();
+            // intellij tells me that result is never null!?
+            if(result != null && result.getProperties() != null && result.getProperties().length > 0) {
+                newHost += "\00" + LoginResult.GSON.toJson( result.getProperties() );
+            }
+            handshakeCopy.setHostName(newHost);
+        }
+        server.sendPacket(handshakeCopy);
         server.getConnection().setProtocol(Protocol.LOGIN);
         server.sendPacket(new ServerboundHelloPacket(player.getName(), player.getUuid()));
     }

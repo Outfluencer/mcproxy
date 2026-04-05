@@ -72,7 +72,7 @@ public class ServerStatus {
             jsonObject.add("players", playersObject);
         }
         if (description != null) {
-            jsonObject.addProperty("description", Util.textComponentSerializerByVersion(protocolVersion).serialize(description));
+            jsonObject.add("description", Util.textComponentSerializerByVersion(protocolVersion).serializeJson(description));
         }
 
         return jsonObject.toString();
@@ -111,7 +111,7 @@ public class ServerStatus {
 
         if (jsonObject.has("description")) {
             JsonElement descElement = jsonObject.get("description");
-            status.description = Util.textComponentSerializerByVersion(protocolVersion).deserialize(descElement.toString());
+            status.description = Util.textComponentSerializerByVersion(protocolVersion).deserialize(descElement);
         }
 
         return status;

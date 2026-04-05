@@ -28,4 +28,5 @@ public abstract class ProxyServer {
     public abstract Player getPlayer(String name);
     public abstract Player getPlayer(UUID uuid);
     public abstract Collection<Player> getPlayers();
+    public abstract int getOnlinePlayerCount();
 }

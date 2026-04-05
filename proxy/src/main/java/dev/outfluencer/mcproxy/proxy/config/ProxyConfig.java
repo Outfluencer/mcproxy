@@ -29,6 +29,7 @@ public class ProxyConfig {
     private int connectionThrottleLimit = 10;
     private long connectionThrottleMillis = 3000;
     private OnlineMode online = OnlineMode.AUTH;
+    private DataForwarding dataForwarding = DataForwarding.BUNGEECORD;
 
     public ProxyConfig check() {
         Set<String> seen = new HashSet<>();
@@ -72,13 +73,17 @@ public class ProxyConfig {
     public enum OnlineMode {
         AUTH, ENCRYPT, OFFLINE;
 
-        public boolean encyrpt() {
+        public boolean encrypt() {
             return this == AUTH || this == ENCRYPT;
         }
 
         public boolean auth() {
             return this == AUTH;
         }
+    }
+
+    public enum DataForwarding {
+        NONE, BUNGEECORD;
     }
 
 }

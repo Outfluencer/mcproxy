@@ -208,14 +208,19 @@ public final class ConnectionHandle {
 
     public void disconnect(String message) {
         assert channel.eventLoop().inEventLoop();
+        disconnect(message == null ? null : TextComponent.of(message));
+    }
+
+    public void disconnect(TextComponent message) {
+        assert channel.eventLoop().inEventLoop();
         if (server) {
             close(null);
-        } else {
-            switch (getEncoderProtocol()) {
-                case HANDSHAKE, STATUS -> close(null);
-                case LOGIN -> close(new ClientboundLoginDisconnectPacket(TextComponent.of(message)));
-                case CONFIG, GAME -> close(new ClientboundCommonDisconnectPacket(TextComponent.of(message)));
-            }
+            return;
+        }
+        switch (getEncoderProtocol()) {
+            case HANDSHAKE, STATUS -> close(null);
+            case LOGIN -> close(message != null ? new ClientboundLoginDisconnectPacket(message) : null);
+            case CONFIG, GAME -> close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
         }
     }
 
