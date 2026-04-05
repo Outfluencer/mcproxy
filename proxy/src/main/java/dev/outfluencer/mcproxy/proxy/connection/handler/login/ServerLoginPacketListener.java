@@ -51,7 +51,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     @Override
     public boolean handle(ClientboundLoginDisconnectPacket packet) {
         server.disconnect();
-        return false;
+        return DROP;
     }
 
     @Override
@@ -65,18 +65,18 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
                     .getChannel()
                     .closeFuture()
                     .addListener(_ -> updatePlayerServer(packet));
-                return false;
+                return DROP;
             }
         }
         updatePlayerServer(packet);
-        return false;
+        return DROP;
     }
 
     @Override
     public boolean handle(ClientboundLoginCompressionPacket packet) {
         server.getConnection().setCompression(packet.getThreshold());
         proxy.getEventManager().fire(new CompressionChangeEvent(packet.getThreshold(), server));
-        return false;
+        return DROP;
     }
 
     @Override

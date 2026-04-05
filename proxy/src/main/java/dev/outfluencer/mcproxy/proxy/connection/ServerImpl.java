@@ -48,7 +48,7 @@ public class ServerImpl implements Server {
 
     @Override
     public String getName() {
-        return String.valueOf(getAddress());
+        return serverInfo.getName();
     }
 
     @Override

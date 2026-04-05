@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.proxy.connection.handler.common;
 
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundCommonPacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 
@@ -24,6 +25,7 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
             return;
         }
         server.sendDecodedPacket(decodedPacket);
+        player.sendMessage("HALLO!!" + player.getEncoderProtocol());
     }
 
     @Override
@@ -39,4 +41,8 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
         return "[" + getClass().getSimpleName() + "|" + player.getName() + "|" + player.getAddress() + "]";
     }
 
+    @Override
+    public void encoderProtocolChanged(Protocol protocol) {
+        player.flushQueue();
+    }
 }

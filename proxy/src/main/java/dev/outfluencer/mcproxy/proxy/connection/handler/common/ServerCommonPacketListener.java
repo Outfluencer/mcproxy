@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.proxy.connection.handler.common;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundUpdateTagsPacket;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 
@@ -19,7 +20,7 @@ public class ServerCommonPacketListener implements ClientboundCommonPacketListen
     @Override
     public boolean handle(ClientboundCommonDisconnectPacket packet) {
         server.disconnect();
-        return false;
+        return DROP;
     }
 
     @Override

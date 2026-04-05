@@ -6,4 +6,6 @@ public interface ClientboundGamePacketListener extends PacketListener {
     boolean handle(ClientboundStartConfigurationPacket packet);
 
     boolean handle(ClientboundBundleDelimiterPacket clientboundBundleDelimiterPacket);
+
+    boolean handle(ClientboundSystemChatPacket clientboundSystemChatPacket);
 }

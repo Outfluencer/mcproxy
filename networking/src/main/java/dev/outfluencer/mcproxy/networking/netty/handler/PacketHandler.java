@@ -6,6 +6,7 @@ import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
+import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.TimeoutException;
@@ -46,6 +47,14 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         connectionHandle.setAutoRead(ctx.channel().isWritable());
         packetHandler.onWritabilityChanged();
+    }
+
+    public void encoderProtocolChanged(Protocol protocol) {
+        packetHandler.encoderProtocolChanged(protocol);
+    }
+
+    public void decoderProtocolChanged(Protocol protocol) {
+        packetHandler.decoderProtocolChanged(protocol);
     }
 
     @Override

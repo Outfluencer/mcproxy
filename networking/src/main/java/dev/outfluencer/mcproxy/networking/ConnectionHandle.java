@@ -22,6 +22,7 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.VoidChannelPromise;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import net.lenni0451.mcstructs.text.TextComponent;
 
@@ -29,16 +30,25 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.net.SocketAddress;
-import java.security.GeneralSecurityException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ConnectionHandle {
 
     @Getter
+    @NonNull
     private final Channel channel;
+    @Getter
+    @NonNull
     private final PacketDecoder decoder;
+    @Getter
+    @NonNull
     private final PacketEncoder encoder;
+    @Getter
+    @Setter
+    @NonNull
+    private PacketHandler packetHandler;
+    @NonNull
     private final ChannelPromise silentPromise;
     @Getter
     private final boolean server;
@@ -47,6 +57,7 @@ public final class ConnectionHandle {
     private int protocolVersion;
     @Getter
     private boolean closed;
+
     @Getter
     private SocketAddress address;
 
@@ -166,21 +177,24 @@ public final class ConnectionHandle {
     public void setDecoderProtocol(Protocol protocol) {
         assert channel.eventLoop().inEventLoop();
         decoder.setRegistry(server ? protocol.clientbound : protocol.serverbound);
+        packetHandler.decoderProtocolChanged(protocol);
     }
 
     public void setEncoderProtocol(Protocol protocol) {
         assert channel.eventLoop().inEventLoop();
         encoder.setRegistry(server ? protocol.serverbound : protocol.clientbound);
+        packetHandler.encoderProtocolChanged(protocol);
+
     }
 
     public void setPacketListener(PacketListener listener) {
         assert channel.eventLoop().inEventLoop();
-        channel.pipeline().get(PacketHandler.class).setPacketHandler(listener);
+        packetHandler.setPacketHandler(listener);
     }
 
     public PacketListener getPacketListener() {
         assert channel.eventLoop().inEventLoop();
-        return channel.pipeline().get(PacketHandler.class).getPacketHandler();
+        return packetHandler.getPacketHandler();
     }
 
     public Protocol getEncoderProtocol() {

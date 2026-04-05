@@ -40,7 +40,7 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
             connection.sendPacket(new ClientboundStatusResponsePacket(e.getServerStatus()));
             state = State.AWAIT_PING;
         }), connection.getChannel().eventLoop());
-        return false;
+        return DROP;
     }
 
     private ServerStatus getServerStatus() {
@@ -55,7 +55,7 @@ public class PlayerStatusPacketListener implements ServerboundStatusPacketListen
     public boolean handle(ServerboundPingRequest packet) {
         stateTransition(State.AWAIT_PING, State.RECEIVED_PING, "Unexpected ServerboundPingRequest");
         connection.close(new ClientboundPongResponsePacket(packet.getPing()));
-        return false;
+        return DROP;
     }
 
     private void stateTransition(State expected, State next, String errorMessage) {

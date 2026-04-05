@@ -44,24 +44,24 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
             player.sendPacket(registryAccumulationQueue.poll());
         }
         server.getConnection().setPacketListener(new ServerGamePacketListener(server));
-        return true;
+        return PASS;
     }
 
     @Override
     public boolean handle(ClientboundRegistryDataPacket packet) {
         registryAccumulationQueue.add(packet);
-        return false;
+        return DROP;
     }
 
     @Override
     public boolean handle(ClientboundUpdateTagsPacket packet) {
         registryAccumulationQueue.add(packet);
-        return false;
+        return DROP;
     }
 
     @Override
     public boolean handle(ClientboundSelectKnownPacks clientboundSelectKnownPacks) {
         server.getConfigurationTracker().pendingKnownPacks++;
-        return true;
+        return PASS;
     }
 }

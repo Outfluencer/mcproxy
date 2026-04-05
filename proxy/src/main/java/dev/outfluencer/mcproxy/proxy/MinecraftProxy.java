@@ -135,6 +135,7 @@ public final class MinecraftProxy extends ProxyServer {
                 ConnectionHandle handle = new ConnectionHandle(ch, false);
                 PacketHandler handler = new PacketHandler(new PlayerHandshakePacketListener(handle), handle);
                 handler.setPacketLimiter(new PacketLimiter(1 << 12, 1 << 25));
+                handle.setPacketHandler(handler);
                 ch.pipeline().addLast(HandlerNames.PACKET_HANDLER, handler);
                 eventManager.fire(new ChannelInitializedEvent(ch, ChannelInitializedEvent.Type.FRONTEND));
             }

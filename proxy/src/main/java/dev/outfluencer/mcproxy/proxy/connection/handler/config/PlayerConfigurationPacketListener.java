@@ -19,18 +19,18 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
     public boolean handle(ServerboundFinishConfigurationPacket packet) {
         player.getConnection().setPacketListener(new PlayerGamePacketListener(player));
         if (!getServer().getConfigurationTracker().pendingLoginAck) {
-            return false;
+            return DROP;
         }
         getServer().getConfigurationTracker().pendingLoginAck = false;
-        return true;
+        return PASS;
     }
 
     @Override
     public boolean handle(ServerboundSelectKnownPacks serverboundSelectKnownPacks) {
         if (getServer().getConfigurationTracker().pendingKnownPacks <= 0) {
-            return false;
+            return DROP;
         }
         getServer().getConfigurationTracker().pendingKnownPacks--;
-        return true;
+        return PASS;
     }
 }

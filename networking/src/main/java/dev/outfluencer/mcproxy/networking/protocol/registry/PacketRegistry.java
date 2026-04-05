@@ -34,10 +34,11 @@ public class PacketRegistry {
      * Returns null if not registered.
      */
     public Packet createPacket(int protocolVersion, int packetId) {
-        Integer floor = idToFactory.floorKey(protocolVersion);
-        if (floor == null) return null;
-        Supplier<? extends Packet> factory = idToFactory.get(floor).get(packetId);
-        return factory != null ? factory.get() : null;
+        for (Integer key = idToFactory.floorKey(protocolVersion); key != null; key = idToFactory.lowerKey(key)) {
+            Supplier<? extends Packet> factory = idToFactory.get(key).get(packetId);
+            if (factory != null) return factory.get();
+        }
+        return null;
     }
 
     /**
@@ -45,14 +46,18 @@ public class PacketRegistry {
      * Falls back to the mapping of the closest older registered version.
      */
     public int getPacketId(int protocolVersion, Class<? extends Packet> packetClass) {
-        Integer floor = classToId.floorKey(protocolVersion);
-        if (floor == null) return -1;
-        return classToId.get(floor).getOrDefault(packetClass, -1);
+        for (Integer key = classToId.floorKey(protocolVersion); key != null; key = classToId.lowerKey(key)) {
+            Integer id = classToId.get(key).get(packetClass);
+            if (id != null) return id;
+        }
+        return -1;
     }
 
     public boolean hasPacket(int protocolVersion, int packetId) {
-        Integer floor = idToFactory.floorKey(protocolVersion);
-        return floor != null && idToFactory.get(floor).containsKey(packetId);
+        for (Integer key = idToFactory.floorKey(protocolVersion); key != null; key = idToFactory.lowerKey(key)) {
+            if (idToFactory.get(key).containsKey(packetId)) return true;
+        }
+        return false;
     }
 
     public TreeMap<Integer, Map<Class<? extends Packet>, Integer>> getClassToId() {

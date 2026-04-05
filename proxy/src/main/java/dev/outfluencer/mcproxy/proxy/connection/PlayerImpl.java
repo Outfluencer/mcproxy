@@ -6,6 +6,7 @@ import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
@@ -17,8 +18,10 @@ import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
 
 import java.net.SocketAddress;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 @Getter
@@ -60,7 +63,7 @@ public class PlayerImpl implements Player {
             case HANDSHAKE, STATUS -> connection.close(null);
             case LOGIN -> connection.close(message != null ? new ClientboundLoginDisconnectPacket(message) : null);
             case CONFIG, GAME ->
-                    connection.close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
+                connection.close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
         }
     }
 
@@ -128,9 +131,26 @@ public class PlayerImpl implements Player {
         return !connection.isClosed();
     }
 
+    private final Queue<Packet<?>> packetQueue = new ArrayDeque<>();
+
     public void sendPacket(Packet<?> packet) {
+        if (connection.getEncoder().getRegistry().getPacketId(connection.getProtocolVersion(), packet.getClass()) == -1) {
+            if (packetQueue.size() > 1024) {
+                throw new IllegalStateException("Packet queue is full");
+            }
+            // the packet is not registered in the current state!
+            packetQueue.add(packet);
+            return;
+        }
         connection.sendPacket(packet);
     }
+
+    public void flushQueue() {
+        while (!packetQueue.isEmpty()) {
+            connection.sendPacket(packetQueue.poll());
+        }
+    }
+
 
     public void sendDecodedPacket(DecodedPacket decodedPacket) {
         connection.sendDecodedPacket(decodedPacket);
@@ -157,8 +177,16 @@ public class PlayerImpl implements Player {
 
         @Override
         public void sendPacket(Packet<?> packet) {
-            connection.sendPacket(packet);
+            PlayerImpl.this.sendPacket(packet);
         }
     };
 
+    // API CALL
+    public void sendMessage(String message) {
+        sendMessage(TextComponent.of(message));
+    }
+
+    public void sendMessage(TextComponent component) {
+        connection.runInEventLoop(() -> sendPacket(new ClientboundSystemChatPacket(component, false)));
+    }
 }

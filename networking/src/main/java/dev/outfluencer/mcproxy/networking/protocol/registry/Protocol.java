@@ -9,6 +9,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFin
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundConfigurationAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import java.util.Map;
@@ -149,11 +150,19 @@ public enum Protocol {
                 ClientboundCommonDisconnectPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x20)
             );
+
             clientbound.registerPacket(
                 ClientboundStartConfigurationPacket.class,
                 ClientboundStartConfigurationPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x74),
                 map(MinecraftVersion.V26_1, 0x76)
+            );
+
+            clientbound.registerPacket(
+                ClientboundSystemChatPacket.class,
+                ClientboundSystemChatPacket::new,
+                map(MinecraftVersion.V1_21_9, 0x77),
+                map(MinecraftVersion.V26_1, 0x79)
             );
 
             serverbound.registerPacket(

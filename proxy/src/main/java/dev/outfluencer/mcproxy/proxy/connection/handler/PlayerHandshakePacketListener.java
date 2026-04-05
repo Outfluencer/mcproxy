@@ -24,7 +24,7 @@ public class PlayerHandshakePacketListener implements ServerboundHandshakePacket
             handle.setProtocol(Protocol.LOGIN);
             if (!MinecraftVersion.isSupported(packet.getVersion())) {
                 handle.disconnect("Unsupported version");
-                return false;
+                return DROP;
             }
             handle.setPacketListener(new PlayerLoginPacketListener(handle, packet));
         } else {
@@ -36,7 +36,7 @@ public class PlayerHandshakePacketListener implements ServerboundHandshakePacket
         if (event.isCancelled()){
             handle.disconnect(event.getDisconnectMessage());
         }
-        return false;
+        return DROP;
     }
 
     @Override

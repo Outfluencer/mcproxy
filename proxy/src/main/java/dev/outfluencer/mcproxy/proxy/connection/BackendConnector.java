@@ -50,7 +50,10 @@ public class BackendConnector {
 
                 ServerImpl server = new ServerImpl(serverInfo, player, backendHandle);
                 player.addPendingConnection(server);
-                ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, new PacketHandler(new ServerLoginPacketListener(server), backendHandle));
+
+                PacketHandler handler = new PacketHandler(new ServerLoginPacketListener(server), backendHandle);
+                backendHandle.setPacketHandler(handler);
+                ch.pipeline().addAfter(HandlerNames.DECODER, HandlerNames.PACKET_HANDLER, handler);
                 ProxyServer.getInstance().getEventManager().fire(new ChannelInitializedEvent(ch, ChannelInitializedEvent.Type.BACKEND));
             }
         }).connect(serverInfo.getSocketAddress()).addListener((ChannelFutureListener) channelFuture -> {

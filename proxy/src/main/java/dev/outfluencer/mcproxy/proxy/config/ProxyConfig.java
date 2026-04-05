@@ -24,11 +24,17 @@ public class ProxyConfig {
     private int maxPlayers = 1;
     @Setter
     private int compressionThreshold = 256;
+    @Setter
     private int readTimeout = 30;
+    @Setter
     private int writeTimeout = 30;
+    @Setter
     private int connectionThrottleLimit = 10;
+    @Setter
     private long connectionThrottleMillis = 3000;
+    @Setter
     private OnlineMode online = OnlineMode.AUTH;
+    @Setter
     private DataForwarding dataForwarding = DataForwarding.BUNGEECORD;
 
     public ProxyConfig check() {

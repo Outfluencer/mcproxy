@@ -66,7 +66,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
                 finishPlayerLogin();
             }
         }), handle.getChannel().eventLoop());
-        return false;
+        return DROP;
     }
 
     @Override
@@ -88,7 +88,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
         } else {
             finishPlayerLogin();
         }
-        return false;
+        return DROP;
     }
 
     @SneakyThrows
@@ -134,7 +134,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     public boolean handle(ServerboundLoginAcknowledgedPacket packet) {
         stateTransition(State.AWAIT_LOGIN_ACKNOWLEDGED, State.RECEIVED_LOGIN_ACKNOWLEDGED, "Unexpected ServerboundLoginAcknowledgedPacket");
         handle.setPacketListener(new PlayerConfigurationPacketListener(player));
-        return true;
+        return PASS;
     }
 
     private void stateTransition(State expected, State next, String errorMessage) {

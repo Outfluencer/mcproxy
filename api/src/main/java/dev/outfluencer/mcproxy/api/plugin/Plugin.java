@@ -16,6 +16,7 @@ public abstract class Plugin {
         this.description = description;
         this.logger = logger;
         this.pluginFolder = Path.of("plugins", description.name());
+        var _ = this.pluginFolder.toFile().mkdirs();
     }
 
     public abstract void onEnable();
