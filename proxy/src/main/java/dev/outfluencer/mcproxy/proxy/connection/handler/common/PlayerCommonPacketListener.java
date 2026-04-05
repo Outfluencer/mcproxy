@@ -25,7 +25,6 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
             return;
         }
         server.sendDecodedPacket(decodedPacket);
-        player.sendMessage("HALLO!!" + player.getEncoderProtocol());
     }
 
     @Override

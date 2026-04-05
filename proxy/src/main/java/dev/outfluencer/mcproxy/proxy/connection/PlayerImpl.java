@@ -47,25 +47,6 @@ public class PlayerImpl implements Player {
     }
 
     @Override
-    public void disconnect(String message) {
-        if (message == null) {
-            disconnect((TextComponent) null);
-        } else {
-            disconnect(TextComponent.of(message));
-        }
-    }
-
-    @Override
-    public void disconnect(TextComponent message) {
-        switch (connection.getEncoderProtocol()) {
-            case HANDSHAKE, STATUS -> connection.close(null);
-            case LOGIN -> connection.close(message != null ? new ClientboundLoginDisconnectPacket(message) : null);
-            case CONFIG, GAME ->
-                connection.close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
-        }
-    }
-
-    @Override
     public SocketAddress getAddress() {
         return connection.getAddress();
     }
@@ -186,5 +167,31 @@ public class PlayerImpl implements Player {
 
     public void sendMessage(TextComponent component) {
         connection.runInEventLoop(() -> sendPacket(new ClientboundSystemChatPacket(component, false)));
+    }
+
+    @Override
+    public void disconnect(String message) {
+        if (message == null) {
+            disconnect((TextComponent) null);
+        } else {
+            disconnect(TextComponent.of(message));
+        }
+    }
+
+    @Override
+    public void disconnect(TextComponent message) {
+        connection.runInEventLoop(() -> {
+            switch (connection.getEncoderProtocol()) {
+                case HANDSHAKE, STATUS -> connection.close(null);
+                case LOGIN -> connection.close(message != null ? new ClientboundLoginDisconnectPacket(message) : null);
+                case CONFIG, GAME ->
+                    connection.close(message != null ? new ClientboundCommonDisconnectPacket(message) : null);
+            }
+        });
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return true;
     }
 }

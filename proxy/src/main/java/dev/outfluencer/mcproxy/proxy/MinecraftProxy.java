@@ -1,8 +1,14 @@
 package dev.outfluencer.mcproxy.proxy;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.Immutable;
 import dev.outfluencer.mcproxy.api.ProxyServer;
+import dev.outfluencer.mcproxy.api.command.CommandManager;
 import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
+import dev.outfluencer.mcproxy.proxy.command.ConsoleCommandSource;
+import dev.outfluencer.mcproxy.proxy.command.ProxyCommands;
 import dev.outfluencer.mcproxy.config.ConfigLoader;
 import dev.outfluencer.mcproxy.event.EventManager;
 import dev.outfluencer.mcproxy.log.ColorLogHandler;
@@ -38,6 +44,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -48,6 +55,7 @@ public final class MinecraftProxy extends ProxyServer {
 
     static {
         ColorLogHandler.install();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> MinecraftProxy.getInstance().stop(false)));
     }
 
     @Getter
@@ -60,6 +68,8 @@ public final class MinecraftProxy extends ProxyServer {
     private final PluginLoader pluginLoader;
     @Getter
     private final EventManager eventManager;
+    @Getter
+    private final CommandManager commandManager;
     private final EventLoopGroup bossGroup = PipelineUtil.newEventLoopGroup(1);
     private final EventLoopGroup workerGroup = PipelineUtil.newEventLoopGroup(0);
     private final Channel serverChannl;
@@ -74,7 +84,7 @@ public final class MinecraftProxy extends ProxyServer {
     @Override
     @Locked.Read("playerLock")
     public Collection<Player> getPlayers() {
-        return Collections.unmodifiableCollection(playersByUuid.values());
+        return List.copyOf(playersByName.values());
     }
 
     @Override
@@ -117,6 +127,7 @@ public final class MinecraftProxy extends ProxyServer {
     private MinecraftProxy() {
         ProxyServer.setInstance(this);
         eventManager = new EventManager();
+        commandManager = new CommandManager();
         config = ConfigLoader.load(Path.of("config.json"), ProxyConfig.class).check();
         logger.info("Loaded configuration from config.json");
 
@@ -142,20 +153,47 @@ public final class MinecraftProxy extends ProxyServer {
         }).bind(config.getBind(), config.getPort()).syncUninterruptibly().channel();
         logger.info("Listening on " + config.getBind() + ":" + config.getPort());
 
+        ProxyCommands.register(commandManager);
         pluginLoader.enablePlugins();
+
+        startConsoleReader();
     }
 
-    @Synchronized("shutdownLock")
+    private void startConsoleReader() {
+        Thread consoleThread = new Thread(() -> {
+            try (java.util.Scanner scanner = new java.util.Scanner(System.in)) {
+                while (!shuttingDown && scanner.hasNextLine()) {
+                    String line = scanner.nextLine().trim();
+                    if (line.isEmpty()) continue;
+                    if (!commandManager.execute(line, ConsoleCommandSource.INSTANCE)) {
+                        logger.warning("Unknown command: " + line);
+                    }
+                }
+            }
+        }, "Console Thread");
+        consoleThread.setDaemon(true);
+        consoleThread.start();
+    }
+
+    @Override
     public void stop() {
-        if(shuttingDown) {
-            return;
+        stop(true);
+    }
+
+    public void stop(boolean callExit) {
+        synchronized (shutdownLock) {
+            if(shuttingDown) {
+                return;
+            }
+            shuttingDown = true;
         }
-        shuttingDown = true;
         getPlayers().forEach(player -> player.disconnect("Proxy shutdown"));
         pluginLoader.disablePlugins();
-        bossGroup.close();
-        workerGroup.close();
-        serverChannl.close().syncUninterruptibly();
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+        if(callExit) {
+            System.exit(0);
+        }
     }
 
     public String getName() {
@@ -166,3 +204,4 @@ public final class MinecraftProxy extends ProxyServer {
         return "0.1";
     }
 }
+

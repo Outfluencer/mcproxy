@@ -1,6 +1,7 @@
 package dev.outfluencer.mcproxy.api;
 
 import com.google.common.base.Preconditions;
+import dev.outfluencer.mcproxy.api.command.CommandManager;
 import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.event.EventManager;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public abstract class ProxyServer {
     }
 
     public abstract EventManager getEventManager();
+    public abstract CommandManager getCommandManager();
     public abstract String getName();
     public abstract String getVersion();
 
