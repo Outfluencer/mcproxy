@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.plugin;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import dev.outfluencer.mcproxy.api.plugin.Plugin;
@@ -53,10 +54,7 @@ public class PluginLoader {
         PluginDescription description;
         try (JarFile jarFile = new JarFile(jarPath.toFile())) {
             JarEntry entry = jarFile.getJarEntry("mcproxy.json");
-            if (entry == null) {
-                throw new IllegalArgumentException("Missing mcproxy.json");
-            }
-
+            Preconditions.checkState(entry != null, "Missing 'mcproxy.json' entry");
             try (InputStreamReader reader = new InputStreamReader(jarFile.getInputStream(entry))) {
                 description = parseDescription(reader);
             }
@@ -68,10 +66,7 @@ public class PluginLoader {
         );
 
         Class<?> mainClass = classLoader.loadClass(description.mainClass());
-        if (!Plugin.class.isAssignableFrom(mainClass)) {
-            throw new IllegalArgumentException("Main class " + description.mainClass() + " does not extend Plugin");
-        }
-
+        Preconditions.checkState(Plugin.class.isAssignableFrom(mainClass), "Main class " + description.mainClass() + " does not extend Plugin");
         Plugin plugin = (Plugin) mainClass.getDeclaredConstructor().newInstance();
         plugin.init(description, Logger.getLogger(description.name()));
         return plugin;

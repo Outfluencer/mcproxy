@@ -33,7 +33,6 @@ public class PlayerImpl implements Player {
 
     @NonNull
     private String name;
-    @NonNull
     private UUID uuid;
     private ServerImpl server;
     private List<ServerImpl> pendingConnections;
@@ -41,10 +40,9 @@ public class PlayerImpl implements Player {
     private LoginResult loginResult;
 
 
-    public PlayerImpl(ConnectionHandle connectionHandle, String name, UUID uuid, ServerboundHandshakePacket handshake) {
+    public PlayerImpl(ConnectionHandle connectionHandle, @NonNull String name, ServerboundHandshakePacket handshake) {
         this.connection = connectionHandle;
         this.name = name;
-        this.uuid = uuid;
         this.handshake = handshake;
     }
 

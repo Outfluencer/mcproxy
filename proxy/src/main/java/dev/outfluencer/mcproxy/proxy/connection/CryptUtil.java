@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginEncryptionRequestPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginEncryptionResponsePacket;
 import lombok.SneakyThrows;
@@ -40,9 +41,7 @@ public class CryptUtil {
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.DECRYPT_MODE, keys.getPrivate());
         byte[] decrypted = cipher.doFinal(resp.getVerifyToken());
-        if (!MessageDigest.isEqual(request.getVerifyToken(), decrypted)) {
-            throw new IllegalStateException("Invalid verification");
-        }
+        Preconditions.checkState(MessageDigest.isEqual(request.getVerifyToken(), decrypted), "Invalid verification");
     }
 
     @SneakyThrows

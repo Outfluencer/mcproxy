@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.api.util;
 
+import com.google.common.base.Preconditions;
 import net.lenni0451.mcstructs.text.Style;
 import net.lenni0451.mcstructs.text.TextComponent;
 import net.lenni0451.mcstructs.text.TextFormatting;
@@ -83,9 +84,7 @@ public class ComponentBuilder {
      * @param colors at least 2 colors
      */
     public static ComponentBuilder gradient(String text, Color... colors) {
-        if (colors.length < 2) {
-            throw new IllegalArgumentException("Gradient requires at least 2 colors");
-        }
+        Preconditions.checkState(colors.length >= 2, "Gradient requires at least 2 colors");
         return new ComponentBuilder(new GradientPart(text, colors));
     }
 
@@ -367,9 +366,7 @@ public class ComponentBuilder {
      * @param colors at least 2 colors
      */
     public ComponentBuilder appendGradient(String text, Color... colors) {
-        if (colors.length < 2) {
-            throw new IllegalArgumentException("Gradient requires at least 2 colors");
-        }
+        Preconditions.checkState(colors.length >= 2, "Gradient requires at least 2 colors");
         finalizeCurrent();
         current = new GradientPart(text, colors);
         return this;

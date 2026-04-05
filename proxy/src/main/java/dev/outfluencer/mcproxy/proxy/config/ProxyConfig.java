@@ -1,9 +1,11 @@
 package dev.outfluencer.mcproxy.proxy.config;
 
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.api.ServerInfo;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,9 +42,7 @@ public class ProxyConfig {
     public ProxyConfig check() {
         Set<String> seen = new HashSet<>();
         for (ServerInfo server : servers) {
-            if (!seen.add(server.getName())) {
-                throw new IllegalStateException("Duplicate server name: " + server.getName());
-            }
+            Preconditions.checkState(seen.add(server.getName()), "Duplicate server name: " + server.getName());
         }
         servers = new CopyOnWriteArrayList<>(servers);
         return this;

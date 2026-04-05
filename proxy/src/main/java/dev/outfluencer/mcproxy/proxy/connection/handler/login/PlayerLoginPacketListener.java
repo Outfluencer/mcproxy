@@ -53,7 +53,7 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     @Override
     public boolean handle(ServerboundHelloPacket packet) {
         stateTransition(State.AWAIT_HELLO, State.RECEIVED_HELLO, "Unexpected ServerboundHelloPacket");
-        player = new PlayerImpl(handle, packet.getName(), packet.getUuid(), handshake);
+        player = new PlayerImpl(handle, packet.getName(), handshake);
         proxy.getEventManager().fireAsync(new PlayerLoginEvent(player), handle.eventCallback(event -> {
             if (event.isCancelled()) {
                 player.disconnect(event.getDisconnectMessage());
@@ -121,6 +121,9 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
     }
 
     public void finishPlayerLogin() {
+        if (player.getUuid() == null) {
+            player.setUuid(UUID.nameUUIDFromBytes(("OfflinePlayer:" + player.getName()).getBytes(StandardCharsets.UTF_8)));
+        }
         if (!proxy.addPlayer(player)) {
             player.disconnect("Already connected to the proxy");
             return;

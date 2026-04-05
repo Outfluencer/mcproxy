@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.api;
 
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.event.EventManager;
 import lombok.Getter;
@@ -13,9 +14,7 @@ public abstract class ProxyServer {
     private static ProxyServer instance;
 
     public static synchronized void setInstance(ProxyServer proxy) {
-        if(instance != null) {
-            throw new IllegalStateException();
-        }
+        Preconditions.checkState(instance == null, "proxy already initialized");
         instance = proxy;
     }
 
