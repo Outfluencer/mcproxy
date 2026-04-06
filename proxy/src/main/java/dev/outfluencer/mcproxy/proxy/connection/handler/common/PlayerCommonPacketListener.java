@@ -33,6 +33,7 @@ public class PlayerCommonPacketListener implements ServerboundCommonPacketListen
     @Override
     public void onDisconnect() {
         // disconnect the backend server
+        getServer().setDiscarded(true);
         getServer().disconnect();
         // clean up any in-progress backend connection (e.g. during server switch)
         player.disconnectPendingConnections();

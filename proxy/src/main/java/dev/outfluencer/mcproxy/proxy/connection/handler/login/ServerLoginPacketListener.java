@@ -122,6 +122,9 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
 
     @Override
     public void onDisconnect() {
+        if(server.isDiscarded()) {
+            return;
+        }
         if (!player.isConnectedToServer()) {
             player.connectToNextFallback();
         }
