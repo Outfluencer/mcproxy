@@ -33,7 +33,11 @@ public class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
             int packetId = Packet.readVarInt(in);
             Packet<?> packet = registry.createPacket(protocolVersion, packetId);
             if (packet != null) {
-                packet.read(in, protocolVersion);
+                try {
+                    packet.read(in, protocolVersion);
+                } catch (Exception e) {
+                    throw new DecoderException("Error reading " + packet.getClass().getSimpleName() + " (" + packetId + ") in " + registry.getProtocol(), e);
+                }
                 if (in.isReadable()) {
                     throw new DecoderException("Packet did not read to end");
                 }

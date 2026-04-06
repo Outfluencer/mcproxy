@@ -75,7 +75,7 @@ public class ServerGamePacketListener extends ServerCommonPacketListener impleme
         return PASS;
     }
 
-    private static final com.mojang.brigadier.Command NOOP_COMMAND = ctx -> 0;
+    private static final com.mojang.brigadier.Command NOOP_COMMAND = _ -> 0;
 
     /**
      * Deep-copies a command node tree for the wire, replacing custom SuggestionProviders
