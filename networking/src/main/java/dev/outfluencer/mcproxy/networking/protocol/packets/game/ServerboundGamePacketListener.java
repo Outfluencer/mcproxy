@@ -6,4 +6,6 @@ public interface ServerboundGamePacketListener extends PacketListener {
     boolean handle(ServerboundConfigurationAcknowledgedPacket packet);
 
     boolean handle(ServerboundChatCommandPacket serverboundChatCommandPacket);
+
+    boolean handle(ServerboundCommandSuggestionPacket serverboundCommandSuggestionPacket);
 }

@@ -30,7 +30,7 @@ public abstract class Packet<T extends PacketListener> {
             throw new DecoderException(msg + ", negative length " + len);
         }
         if (len > max) {
-            throw new DecoderException(msg + ", length" + len + " exeeded maximum " + max);
+            throw new DecoderException(msg + ", length " + len + " exeeded maximum " + max);
         }
     }
 
@@ -46,7 +46,7 @@ public abstract class Packet<T extends PacketListener> {
         int len = readVarInt(input);
         checkRead(len, maxLength * 3, "read string bytes");
         String string = input.readString(len, StandardCharsets.UTF_8);
-        checkRead(len, string.length(), "read string chars");
+        checkRead(string.length(), len, "read string chars");
         return string;
     }
 

@@ -30,6 +30,7 @@
         <lombok.version>1.18.44</lombok.version>
         <lambdaevents.version>2.4.2</lambdaevents.version>
         <junit.version>5.11.4</junit.version>
+        <guava.version>33.5.0-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -39,6 +40,12 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Guava in every module -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 

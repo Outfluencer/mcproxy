@@ -8,4 +8,8 @@ public interface ClientboundGamePacketListener extends PacketListener {
     boolean handle(ClientboundBundleDelimiterPacket clientboundBundleDelimiterPacket);
 
     boolean handle(ClientboundSystemChatPacket clientboundSystemChatPacket);
+
+    boolean handle(ClientboundCommandsPacket clientboundCommandsPacket);
+
+    boolean handle(ClientboundCommandSuggestionsPacket clientboundCommandSuggestionsPacket);
 }

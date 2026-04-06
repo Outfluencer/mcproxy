@@ -1,14 +1,9 @@
 package dev.outfluencer.mcproxy.proxy;
 
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
-import com.google.errorprone.annotations.Immutable;
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.command.CommandManager;
 import dev.outfluencer.mcproxy.api.connection.Player;
 import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
-import dev.outfluencer.mcproxy.proxy.command.ConsoleCommandSource;
-import dev.outfluencer.mcproxy.proxy.command.ProxyCommands;
 import dev.outfluencer.mcproxy.config.ConfigLoader;
 import dev.outfluencer.mcproxy.event.EventManager;
 import dev.outfluencer.mcproxy.log.ColorLogHandler;
@@ -24,6 +19,8 @@ import dev.outfluencer.mcproxy.networking.netty.handler.VarInt21FrameEncoder;
 import dev.outfluencer.mcproxy.networking.netty.handler.Varint21FrameDecoder;
 import dev.outfluencer.mcproxy.networking.protocol.registry.MinecraftVersion;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import dev.outfluencer.mcproxy.proxy.command.ConsoleCommandSource;
+import dev.outfluencer.mcproxy.proxy.command.ProxyCommands;
 import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
 import dev.outfluencer.mcproxy.proxy.connection.PlayerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.PlayerHandshakePacketListener;
@@ -38,11 +35,10 @@ import io.netty.util.ResourceLeakDetector;
 import lombok.Getter;
 import lombok.Locked;
 import lombok.SneakyThrows;
-import lombok.Synchronized;
+import net.lenni0451.mcstructs.text.TextComponent;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +51,9 @@ public final class MinecraftProxy extends ProxyServer {
 
     static {
         ColorLogHandler.install();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> MinecraftProxy.getInstance().stop(false)));
+        System.setOut(new LoggerPrintStream(Logger.getLogger("STDOUT"), java.util.logging.Level.INFO));
+        System.setErr(new LoggerPrintStream(Logger.getLogger("STDERR"), java.util.logging.Level.SEVERE));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> MinecraftProxy.getInstance().stop(null, false)));
     }
 
     @Getter
@@ -65,7 +63,7 @@ public final class MinecraftProxy extends ProxyServer {
     @Getter
     private final ProxyConfig config;
     @Getter
-    private final PluginLoader pluginLoader;
+    private final PluginLoader pluginManager;
     @Getter
     private final EventManager eventManager;
     @Getter
@@ -131,8 +129,8 @@ public final class MinecraftProxy extends ProxyServer {
         config = ConfigLoader.load(Path.of("config.json"), ProxyConfig.class).check();
         logger.info("Loaded configuration from config.json");
 
-        pluginLoader = new PluginLoader(Path.of("plugins"));
-        pluginLoader.loadPlugins();
+        pluginManager = new PluginLoader(Path.of("plugins"));
+        pluginManager.loadPlugins();
 
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
         if (System.getProperty("io.netty.allocator.type") == null) {
@@ -154,7 +152,7 @@ public final class MinecraftProxy extends ProxyServer {
         logger.info("Listening on " + config.getBind() + ":" + config.getPort());
 
         ProxyCommands.register(commandManager);
-        pluginLoader.enablePlugins();
+        pluginManager.enablePlugins();
 
         startConsoleReader();
     }
@@ -164,7 +162,9 @@ public final class MinecraftProxy extends ProxyServer {
             try (java.util.Scanner scanner = new java.util.Scanner(System.in)) {
                 while (!shuttingDown && scanner.hasNextLine()) {
                     String line = scanner.nextLine().trim();
-                    if (line.isEmpty()) continue;
+                    if (line.isEmpty()) {
+                        continue;
+                    }
                     if (!commandManager.execute(line, ConsoleCommandSource.INSTANCE)) {
                         logger.warning("Unknown command: " + line);
                     }
@@ -176,22 +176,22 @@ public final class MinecraftProxy extends ProxyServer {
     }
 
     @Override
-    public void stop() {
-        stop(true);
+    public void stop(TextComponent message) {
+        stop(message == null ? TextComponent.of("Proxy shutdown") : message, true);
     }
 
-    public void stop(boolean callExit) {
+    public void stop(TextComponent message, boolean callExit) {
         synchronized (shutdownLock) {
-            if(shuttingDown) {
+            if (shuttingDown) {
                 return;
             }
             shuttingDown = true;
         }
-        getPlayers().forEach(player -> player.disconnect("Proxy shutdown"));
-        pluginLoader.disablePlugins();
+        getPlayers().forEach(player -> player.disconnect(message));
+        pluginManager.disablePlugins();
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
-        if(callExit) {
+        if (callExit) {
             System.exit(0);
         }
     }

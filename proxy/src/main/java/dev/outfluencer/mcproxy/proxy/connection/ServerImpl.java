@@ -21,6 +21,8 @@ public class ServerImpl implements Server {
     private final PlayerImpl player;
     private final ConnectionHandle connection;
     @Setter
+    private boolean discarded;
+    @Setter
     private ConfigurationTracker configurationTracker;
     public boolean isConnected() {
         return !connection.isClosed();

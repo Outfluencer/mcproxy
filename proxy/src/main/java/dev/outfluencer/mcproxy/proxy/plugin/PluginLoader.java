@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import dev.outfluencer.mcproxy.api.plugin.Plugin;
 import dev.outfluencer.mcproxy.api.plugin.PluginDescription;
+import dev.outfluencer.mcproxy.api.plugin.PluginManager;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,7 +21,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
-public class PluginLoader {
+public class PluginLoader implements PluginManager {
 
     private static final Logger logger = Logger.getLogger(PluginLoader.class.getName());
     private static final Gson GSON = new Gson();
@@ -99,7 +100,28 @@ public class PluginLoader {
         }
     }
 
+    @Override
+    public Plugin getPlugin(Class<?> pluginClass) {
+        return plugins.stream().filter(plugin -> plugin.getClass().equals(pluginClass)).findFirst().orElse(null);
+    }
+
+    @Override
     public List<Plugin> getPlugins() {
         return Collections.unmodifiableList(plugins);
+    }
+
+    @Override
+    public Plugin getPlugin(String name) {
+        return plugins.stream().filter(plugin -> plugin.getDescription().name().equals(name)).findFirst().orElse(null);
+    }
+
+    @Override
+    public boolean hasPlugin(Class<?> pluginClass) {
+        return plugins.stream().anyMatch(plugin -> plugin.getClass().equals(pluginClass));
+    }
+
+    @Override
+    public boolean hasPlugin(String name) {
+        return plugins.stream().anyMatch(plugin -> plugin.getDescription().name().equals(name));
     }
 }

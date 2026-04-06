@@ -1,7 +1,10 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
+import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.api.connection.Player;
+import dev.outfluencer.mcproxy.api.events.PermissionCheckEvent;
+import dev.outfluencer.mcproxy.api.util.ComponentBuilder;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
@@ -17,12 +20,14 @@ import lombok.NonNull;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
 
+import java.awt.*;
 import java.net.SocketAddress;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
@@ -63,7 +68,13 @@ public class PlayerImpl implements Player {
 
     public void connectToNextFallback() {
         if (fallbackConnects == null || fallbackConnects.isEmpty()) {
-            disconnect("No fallback server found");
+            //disconnect("No fallback server found");
+            connection.getChannel().eventLoop().schedule(() -> {
+                if(isConnected() && !isConnectedToServer()) {
+                    sendMessage(ComponentBuilder.gradient("All fallback servers went down, waiting for fallback server to start!", new Color(168, 50, 88), new Color(255, 13, 0)).build());
+                    fallback();
+                }
+            }, 15, TimeUnit.SECONDS);
             return;
         }
         connect(fallbackConnects.removeFirst());
@@ -192,6 +203,6 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        return true;
+        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, true)).hasPermission();
     }
 }

@@ -30,17 +30,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
         </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>33.5.0-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>com.mojang</groupId>
-            <artifactId>brigadier</artifactId>
-            <version>1.3.10</version>
-        </dependency>
     </dependencies>
 
 </project>

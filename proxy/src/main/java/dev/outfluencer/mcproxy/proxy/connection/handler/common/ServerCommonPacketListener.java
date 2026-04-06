@@ -1,5 +1,8 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.common;
 
+import dev.outfluencer.mcproxy.api.ProxyServer;
+import dev.outfluencer.mcproxy.api.ServerInfo;
+import dev.outfluencer.mcproxy.api.events.ServerKickPlayerEvent;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundUpdateTagsPacket;
@@ -19,8 +22,22 @@ public class ServerCommonPacketListener implements ClientboundCommonPacketListen
 
     @Override
     public boolean handle(ClientboundCommonDisconnectPacket packet) {
-        server.disconnect();
-        return DROP;
+        try {
+            var event = ProxyServer.getInstance().getEventManager().fire(new ServerKickPlayerEvent(player, server, packet.getReason()));
+            event.setCancelled(true);
+            if (event.isCancelled()) {
+                if (event.getFallbackServer() != null) {
+                    server.setDiscarded(true);
+                    player.connect(new ServerInfo());
+                }
+                return DROP;
+            }
+            packet.setReason(event.getReason());
+            player.sendPacket(packet);
+            return DROP;
+        } finally {
+            server.disconnect(packet.getReason());
+        }
     }
 
     @Override
@@ -30,6 +47,10 @@ public class ServerCommonPacketListener implements ClientboundCommonPacketListen
 
     @Override
     public void onDisconnect() {
+        if(server.isDiscarded()) {
+            return;
+        }
+        server.setDiscarded(true);
         if (player.getServer() != server) {
             // player already on another server
             return;

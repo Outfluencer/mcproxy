@@ -8,9 +8,12 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSel
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandsPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandSuggestionsPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundChatCommandPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundCommandSuggestionPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ServerboundConfigurationAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import java.util.Map;
@@ -147,6 +150,20 @@ public enum Protocol {
                 map(MinecraftVersion.V1_21_11, 0x00)
             );
             clientbound.registerPacket(
+                ClientboundCommandsPacket.class,
+                ClientboundCommandsPacket::new,
+                map(MinecraftVersion.V1_20_2, 0x11),
+                map(MinecraftVersion.V1_21_5, 0x10)
+            );
+
+            clientbound.registerPacket(
+                ClientboundCommandSuggestionsPacket.class,
+                ClientboundCommandSuggestionsPacket::new,
+                map(MinecraftVersion.V1_20_2, 0x10),
+                map(MinecraftVersion.V1_21_5, 0x0F)
+            );
+
+            clientbound.registerPacket(
                 ClientboundCommonDisconnectPacket.class,
                 ClientboundCommonDisconnectPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x20)
@@ -177,6 +194,15 @@ public enum Protocol {
                 ServerboundChatCommandPacket::new,
                 map(MinecraftVersion.V1_21_6, 0x06),
                 map(MinecraftVersion.V26_1, 0x07 )
+            );
+
+            serverbound.registerPacket(
+                ServerboundCommandSuggestionPacket.class,
+                ServerboundCommandSuggestionPacket::new,
+                map(MinecraftVersion.V1_20_5, 0x0B),
+                map(MinecraftVersion.V1_21_2, 0x0D ),
+                map(MinecraftVersion.V1_21_6, 0x0E ),
+                map(MinecraftVersion.V26_1, 0x0F )
             );
         }
     };

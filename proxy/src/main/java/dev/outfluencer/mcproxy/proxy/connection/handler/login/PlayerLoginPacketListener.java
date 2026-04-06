@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 import com.google.gson.Gson;
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
 import dev.outfluencer.mcproxy.api.events.PlayerAuthenticateEvent;
+import dev.outfluencer.mcproxy.api.events.PlayerLoggedInEvent;
 import dev.outfluencer.mcproxy.api.events.PlayerLoginEvent;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
@@ -128,9 +129,17 @@ public class PlayerLoginPacketListener implements ServerboundLoginPacketListener
             player.disconnect("Already connected to the proxy");
             return;
         }
-        setCompression(proxy.getConfig().getCompressionThreshold());
-        player.fallback();
-        state = State.AWAIT_LOGIN_ACKNOWLEDGED;
+
+        proxy.getEventManager().fireAsync(new PlayerLoggedInEvent(player), player.getConnection().eventCallback(event -> {
+            if (event.isCancelled()) {
+                player.disconnect(event.getDisconnectMessage());
+                return;
+            }
+
+            setCompression(proxy.getConfig().getCompressionThreshold());
+            player.fallback();
+            state = State.AWAIT_LOGIN_ACKNOWLEDGED;
+        }), player.getConnection().getChannel().eventLoop());
     }
 
     @Override
