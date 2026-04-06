@@ -22,6 +22,9 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
             return DROP;
         }
         getServer().getConfigurationTracker().pendingLoginAck = false;
+        if(player.getSettings() != null) {
+            getServer().sendPacket(player.getSettings());
+        }
         return PASS;
     }
 

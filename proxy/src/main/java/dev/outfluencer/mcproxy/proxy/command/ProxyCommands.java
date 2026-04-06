@@ -127,9 +127,9 @@ public final class ProxyCommands {
             Collection<? extends Player> targets;
             if (playerName.equals("-all")) {
                 targets = proxy.getPlayers();
-            } else if (playerName.equals("-current")) {
+            } else if (playerName.equals("-server")) {
                 if (!(source instanceof Player sender)) {
-                    source.sendMessage("-current can only be used by players.");
+                    source.sendMessage("-server can only be used by players.");
                     return 0;
                 }
                 ServerInfo currentServer = ((PlayerImpl) sender).getServer().getServerInfo();

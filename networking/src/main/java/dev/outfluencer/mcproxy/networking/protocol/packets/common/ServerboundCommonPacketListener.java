@@ -4,4 +4,5 @@ import dev.outfluencer.mcproxy.networking.protocol.PacketListener;
 
 public interface ServerboundCommonPacketListener extends PacketListener {
 
+    boolean handle(ServerboundClientInformationPacket serverboundClientInformationPacket);
 }

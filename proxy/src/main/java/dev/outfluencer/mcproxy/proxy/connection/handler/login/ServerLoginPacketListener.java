@@ -106,7 +106,6 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
             assert playerEncoderProtocol == Protocol.CONFIG;
             server.sendPacket(new ServerboundLoginAcknowledgedPacket());
         }
-
     }
 
     @Override

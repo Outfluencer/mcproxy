@@ -9,6 +9,7 @@ import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundClientInformationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
@@ -43,6 +44,7 @@ public class PlayerImpl implements Player {
     private List<ServerImpl> pendingConnections;
     private List<ServerInfo> fallbackConnects;
     private LoginResult loginResult;
+    private ServerboundClientInformationPacket settings;
 
 
     public PlayerImpl(ConnectionHandle connectionHandle, @NonNull String name, ServerboundHandshakePacket handshake) {
@@ -203,7 +205,7 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        boolean has = getName().equalsIgnoreCase("Outfluencer");
+        boolean has = getName().equalsIgnoreCase("Outfluencer") || getName().equalsIgnoreCase("Riesenrad");
         return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, has)).hasPermission();
     }
 }

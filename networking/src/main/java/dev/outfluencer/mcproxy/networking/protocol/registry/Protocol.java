@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.networking.protocol.registry;
 
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundUpdateTagsPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundClientInformationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundRegistryDataPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
@@ -131,6 +132,12 @@ public enum Protocol {
             );
 
             serverbound.registerPacket(
+                ServerboundClientInformationPacket.class,
+                ServerboundClientInformationPacket::new,
+                map(MinecraftVersion.V1_20_2, 0x00)
+            );
+
+            serverbound.registerPacket(
                 ServerboundFinishConfigurationPacket.class,
                 ServerboundFinishConfigurationPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x03)
@@ -194,6 +201,15 @@ public enum Protocol {
                 ServerboundChatCommandPacket::new,
                 map(MinecraftVersion.V1_21_6, 0x06),
                 map(MinecraftVersion.V26_1, 0x07 )
+            );
+
+            serverbound.registerPacket(
+                ServerboundClientInformationPacket.class,
+                ServerboundClientInformationPacket::new,
+                map(MinecraftVersion.V1_20_5, 0x0A),
+                map(MinecraftVersion.V1_21_2, 0x0C),
+                map(MinecraftVersion.V1_21_6, 0x0D),
+                map(MinecraftVersion.V26_1, 0x0E)
             );
 
             serverbound.registerPacket(
