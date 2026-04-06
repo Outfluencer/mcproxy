@@ -69,7 +69,7 @@ public class PacketHandler extends ChannelInboundHandlerAdapter {
                     if (packet.nextProtocol() != null) {
                         connectionHandle.setDecoderProtocol(packet.nextProtocol());
                     }
-                        sendPacket = packet.handle(packetHandler);
+                    sendPacket = packet.handle(packetHandler);
                 }
 
                 if (packetLimiter != null && !packetLimiter.incrementAndCheck(decodedPacket.byteBuf().readableBytes())) {

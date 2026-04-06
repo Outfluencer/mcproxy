@@ -2,6 +2,7 @@ package dev.outfluencer.mcproxy.networking.protocol;
 
 import dev.outfluencer.mcproxy.networking.netty.QuietException;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import io.netty.buffer.ByteBufUtil;
 
 public interface PacketListener {
 
@@ -32,6 +33,6 @@ public interface PacketListener {
     }
 
     default void handle(DecodedPacket decodedPacket) {
-        throw new QuietException("Unexpected DecodedPacket");
+        throw new QuietException("Unexpected DecodedPacket " + ByteBufUtil.hexDump(decodedPacket.byteBuf()));
     }
 }

@@ -35,9 +35,9 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         ServerboundHandshakePacket original = player.getHandshake();
         ServerboundHandshakePacket handshakeCopy = new ServerboundHandshakePacket(original.getVersion(), original.getHostName(), original.getPort(), original.getClientIntent());
         if(proxy.getConfig().getDataForwarding() == ProxyConfig.DataForwarding.BUNGEECORD && player.getAddress() instanceof InetSocketAddress inetSocketAddress) {
-            String newHost = handshakeCopy.getHostName() + "\00" + Util.sanitizeAddress( inetSocketAddress ) + "\00" + player.getLoginResult().getId();
+            String rawUuid = player.getUuid().toString().replace("-", "");
+            String newHost = handshakeCopy.getHostName() + "\00" + Util.sanitizeAddress( inetSocketAddress ) + "\00" + rawUuid;
             LoginResult result = player.getLoginResult();
-            // intellij tells me that result is never null!?
             if(result != null && result.getProperties() != null && result.getProperties().length > 0) {
                 newHost += "\00" + LoginResult.GSON.toJson( result.getProperties() );
             }
