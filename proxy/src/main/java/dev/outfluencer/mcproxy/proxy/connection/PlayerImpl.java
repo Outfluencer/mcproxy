@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.api.connection.Player;
@@ -16,6 +17,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLogi
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import io.netty.channel.Channel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -45,6 +48,24 @@ public class PlayerImpl implements Player {
     private List<ServerInfo> fallbackConnects;
     private LoginResult loginResult;
     private ServerboundClientInformationPacket settings;
+    @Getter
+    private ConfigurationTracker configurationTracker = new ConfigurationTracker();
+
+    @Data
+    public static class ConfigurationTracker {
+        private boolean pendingFinishConfiguration = false;
+        private CompletableFuture<Void> sentFinishConfiguration = CompletableFuture.completedFuture(null);
+
+        public void setPendingFinishConfiguration(boolean value) {
+            Preconditions.checkState(pendingFinishConfiguration != value);
+            this.pendingFinishConfiguration = value;
+            if(value) {
+                sentFinishConfiguration = new CompletableFuture<>();
+            } else {
+                sentFinishConfiguration.complete(null);
+            }
+        }
+    }
 
 
     public PlayerImpl(ConnectionHandle connectionHandle, @NonNull String name, ServerboundHandshakePacket handshake) {

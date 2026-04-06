@@ -1,13 +1,16 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
-import dev.outfluencer.mcproxy.api.connection.Server;
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.api.ServerInfo;
+import dev.outfluencer.mcproxy.api.connection.Server;
 import dev.outfluencer.mcproxy.networking.ConnectionHandle;
 import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.channel.Channel;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.lenni0451.mcstructs.text.TextComponent;
@@ -22,8 +25,8 @@ public class ServerImpl implements Server {
     private final ConnectionHandle connection;
     @Setter
     private boolean discarded;
-    @Setter
-    private ConfigurationTracker configurationTracker;
+    private final ConfigurationTracker configurationTracker = new ConfigurationTracker();
+
     public boolean isConnected() {
         return !connection.isClosed();
     }
@@ -81,9 +84,48 @@ public class ServerImpl implements Server {
         }
     };
 
+    @Data
     public static class ConfigurationTracker {
-        public int pendingKnownPacks;
-        public boolean pendingLoginAck;
-        public boolean pendingStartConfigAck;
+        @NonNull
+        private final IntHolder pendingKnownPacks = new IntHolder();
+        private boolean pendingLoginAck = false;
+        private boolean pendingStartConfigAck = false;
+
+        public void assertSafe() {
+            Preconditions.checkState(pendingKnownPacks.get() == 0, "pendingKnownPacks.get() == 0");
+            Preconditions.checkState(!pendingLoginAck, "!pendingLoginAck");
+            Preconditions.checkState(!pendingStartConfigAck, "!pendingStartConfigAck");
+        }
+    }
+
+    public static class IntHolder {
+        private int value;
+
+        public int get() {
+            return value;
+        }
+
+        public int increment() {
+            return ++value;
+        }
+
+        public int set(int value) {
+            this.value = value;
+            return value;
+        }
+
+        public int decrement() {
+            return --value;
+        }
+
+        public int add(int n) {
+            value += n;
+            return value;
+        }
+
+        public int subtract(int n) {
+            value -= n;
+            return value;
+        }
     }
 }

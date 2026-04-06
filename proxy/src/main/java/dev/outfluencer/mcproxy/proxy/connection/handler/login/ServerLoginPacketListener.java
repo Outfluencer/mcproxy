@@ -1,13 +1,17 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
-import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
-import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.networking.Util;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.*;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginEncryptionRequestPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginPacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
@@ -34,12 +38,12 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
     public void onConnect() {
         ServerboundHandshakePacket original = player.getHandshake();
         ServerboundHandshakePacket handshakeCopy = new ServerboundHandshakePacket(original.getVersion(), original.getHostName(), original.getPort(), original.getClientIntent());
-        if(proxy.getConfig().getDataForwarding() == ProxyConfig.DataForwarding.BUNGEECORD && player.getAddress() instanceof InetSocketAddress inetSocketAddress) {
+        if (proxy.getConfig().getDataForwarding() == ProxyConfig.DataForwarding.BUNGEECORD && player.getAddress() instanceof InetSocketAddress inetSocketAddress) {
             String rawUuid = player.getUuid().toString().replace("-", "");
-            String newHost = handshakeCopy.getHostName() + "\00" + Util.sanitizeAddress( inetSocketAddress ) + "\00" + rawUuid;
+            String newHost = handshakeCopy.getHostName() + "\00" + Util.sanitizeAddress(inetSocketAddress) + "\00" + rawUuid;
             LoginResult result = player.getLoginResult();
-            if(result != null && result.getProperties() != null && result.getProperties().length > 0) {
-                newHost += "\00" + LoginResult.GSON.toJson( result.getProperties() );
+            if (result != null && result.getProperties() != null && result.getProperties().length > 0) {
+                newHost += "\00" + LoginResult.GSON.toJson(result.getProperties());
             }
             handshakeCopy.setHostName(newHost);
         }
@@ -59,12 +63,10 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         // get the server the player is currently connected to
         ServerImpl server = this.server.getPlayer().getServer();
         if (server != null) {
+            server.setDiscarded(true);
             if (server.isConnected()) {
                 server.disconnect();
-                server.getConnection()
-                    .getChannel()
-                    .closeFuture()
-                    .addListener(_ -> updatePlayerServer(packet));
+                server.getConnection().getChannel().closeFuture().addListener(_ -> updatePlayerServer(packet));
                 return DROP;
             }
         }
@@ -88,6 +90,10 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         if (!player.isConnected()) {
             return;
         }
+        if(player.getConfigurationTracker().isPendingFinishConfiguration()) {
+            player.getConfigurationTracker().getSentFinishConfiguration().thenAccept(_ -> updatePlayerServer(packet));
+            return;
+        }
 
         server.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
         player.setServer(server);
@@ -101,7 +107,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
                 player.sendPacket(new ClientboundBundleDelimiterPacket());
             }
             player.sendPacket(new ClientboundStartConfigurationPacket());
-            server.getConfigurationTracker().pendingStartConfigAck = true;
+            server.getConfigurationTracker().setPendingStartConfigAck(true);
         } else {
             assert playerEncoderProtocol == Protocol.CONFIG;
             server.sendPacket(new ServerboundLoginAcknowledgedPacket());

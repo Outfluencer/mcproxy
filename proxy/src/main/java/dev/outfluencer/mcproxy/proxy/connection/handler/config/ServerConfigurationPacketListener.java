@@ -28,7 +28,7 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
     public ServerConfigurationPacketListener(ServerImpl server) {
         assert server.getDecoderProtocol() == Protocol.CONFIG;
         super(server);
-        server.setConfigurationTracker(new ServerImpl.ConfigurationTracker());
+        server.getConfigurationTracker().assertSafe();
     }
 
     @Override
@@ -38,12 +38,13 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
 
     @Override
     public boolean handle(ClientboundFinishConfigurationPacket packet) {
-        server.getConfigurationTracker().pendingLoginAck = true;
+        server.getConfigurationTracker().setPendingLoginAck(true);
         // send all possibly config state breaking packets at the same time.
         while (!registryAccumulationQueue.isEmpty()) {
             player.sendPacket(registryAccumulationQueue.poll());
         }
         server.getConnection().setPacketListener(new ServerGamePacketListener(server));
+        player.getConfigurationTracker().setPendingFinishConfiguration(true);
         return PASS;
     }
 
@@ -61,7 +62,7 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
 
     @Override
     public boolean handle(ClientboundSelectKnownPacks clientboundSelectKnownPacks) {
-        server.getConfigurationTracker().pendingKnownPacks++;
+        server.getConfigurationTracker().getPendingKnownPacks().increment();
         return PASS;
     }
 }

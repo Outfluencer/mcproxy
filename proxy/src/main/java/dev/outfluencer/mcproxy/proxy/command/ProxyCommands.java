@@ -17,6 +17,7 @@ import net.lenni0451.mcstructs.text.TextComponent;
 
 import java.awt.*;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 public final class ProxyCommands {

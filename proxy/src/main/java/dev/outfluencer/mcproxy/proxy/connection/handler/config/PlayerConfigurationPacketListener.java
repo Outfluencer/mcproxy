@@ -1,5 +1,6 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.config;
 
+import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundConfigurationPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
@@ -17,11 +18,12 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
 
     @Override
     public boolean handle(ServerboundFinishConfigurationPacket packet) {
+        player.getConfigurationTracker().setPendingFinishConfiguration(false);
         player.getConnection().setPacketListener(new PlayerGamePacketListener(player));
-        if (!getServer().getConfigurationTracker().pendingLoginAck) {
+        if (!getServer().getConfigurationTracker().isPendingLoginAck()) {
             return DROP;
         }
-        getServer().getConfigurationTracker().pendingLoginAck = false;
+        getServer().getConfigurationTracker().setPendingLoginAck(false);
         if(player.getSettings() != null) {
             getServer().sendPacket(player.getSettings());
         }
@@ -30,10 +32,10 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
 
     @Override
     public boolean handle(ServerboundSelectKnownPacks serverboundSelectKnownPacks) {
-        if (getServer().getConfigurationTracker().pendingKnownPacks <= 0) {
+        if (getServer().getConfigurationTracker().getPendingKnownPacks().get() <= 0) {
             return DROP;
         }
-        getServer().getConfigurationTracker().pendingKnownPacks--;
+        getServer().getConfigurationTracker().getPendingKnownPacks().decrement();
         return PASS;
     }
 }
