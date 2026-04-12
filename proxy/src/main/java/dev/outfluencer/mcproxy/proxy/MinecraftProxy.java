@@ -132,7 +132,7 @@ public final class MinecraftProxy extends ProxyServer {
         pluginManager = new PluginLoader(Path.of("plugins"));
         pluginManager.loadPlugins();
 
-        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.DISABLED);
         if (System.getProperty("io.netty.allocator.type") == null) {
             System.setProperty("io.netty.allocator.type", "pooled");
         }

@@ -33,7 +33,7 @@ public enum Protocol {
             serverbound.registerPacket(
                 ServerboundHandshakePacket.class,
                 ServerboundHandshakePacket::new,
-                map(MinecraftVersion.V1_8, 0x00)
+                map(0, 0x00)
             );
         }
     },
@@ -42,23 +42,23 @@ public enum Protocol {
             serverbound.registerPacket(
                 ServerboundStatusRequestPacket.class,
                 () -> ServerboundStatusRequestPacket.INSTANCE,
-                map(MinecraftVersion.V1_8, 0x00)
+                map(0, 0x00)
             );
             serverbound.registerPacket(
                 ServerboundPingRequest.class,
                 ServerboundPingRequest::new,
-                map(MinecraftVersion.V1_8, 0x01)
+                map(0, 0x01)
             );
 
             clientbound.registerPacket(
                 ClientboundStatusResponsePacket.class,
                 ClientboundStatusResponsePacket::new,
-                map(MinecraftVersion.V1_8, 0x00)
+                map(0, 0x00)
             );
             clientbound.registerPacket(
                 ClientboundPongResponsePacket.class,
                 ClientboundPongResponsePacket::new,
-                map(MinecraftVersion.V1_8, 0x01)
+                map(0, 0x01)
             );
         }
     },

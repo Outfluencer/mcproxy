@@ -78,7 +78,7 @@ public class Util {
             case V1_21_5 -> TextComponentSerializer.V1_21_5;
             case V1_21_6, V1_21_7 -> TextComponentSerializer.V1_21_6;
             case V1_21_9, V1_21_11, V26_1 -> TextComponentSerializer.V1_21_9;
-            default -> throw new IllegalStateException("Unexpected value: " + protocolVersion);
+            default -> TextComponentSerializer.LATEST;
         };
     }
 
@@ -91,7 +91,7 @@ public class Util {
             case V1_21_5 -> TextComponentCodec.V1_21_5;
             case V1_21_6, V1_21_7 -> TextComponentCodec.V1_21_6;
             case V1_21_9, V1_21_11, V26_1 -> TextComponentCodec.V1_21_9;
-            default -> throw new IllegalStateException("Unexpected value: " + protocolVersion);
+            default -> TextComponentCodec.LATEST;
         };
     }
 
