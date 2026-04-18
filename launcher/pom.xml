@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>dev.outfluencer</groupId>
+        <groupId>dev.outfluencer.mcproxy</groupId>
         <artifactId>mcproxy</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -16,7 +16,7 @@
     <dependencies>
         <!-- Proxy and its transitive deps are bundled into the launcher fat JAR -->
         <dependency>
-            <groupId>dev.outfluencer</groupId>
+            <groupId>dev.outfluencer.mcproxy</groupId>
             <artifactId>proxy</artifactId>
             <version>${project.version}</version>
         </dependency>
