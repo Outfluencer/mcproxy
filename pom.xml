@@ -288,6 +288,14 @@
              in distributionManagement). Activated by the release workflow. -->
         <profile>
             <id>central-portal</id>
+            <properties>
+                <!-- During a Central release, publish every module the plugin
+                     doesn't explicitly exclude, and sign/source/javadoc them. -->
+                <maven.deploy.skip>false</maven.deploy.skip>
+                <maven.source.skip>false</maven.source.skip>
+                <maven.javadoc.skip>false</maven.javadoc.skip>
+                <gpg.skip>false</gpg.skip>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -298,7 +306,13 @@
                         <configuration>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
-                            <skipPublishing>${maven.deploy.skip}</skipPublishing>
+                            <!-- Application modules stay private; only the
+                                 library modules go to Central. -->
+                            <excludeArtifacts>
+                                <excludeArtifact>proxy</excludeArtifact>
+                                <excludeArtifact>launcher</excludeArtifact>
+                                <excludeArtifact>sample-plugin</excludeArtifact>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
