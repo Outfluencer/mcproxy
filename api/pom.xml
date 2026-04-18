@@ -18,7 +18,6 @@
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <maven.source.skip>false</maven.source.skip>
         <gpg.skip>false</gpg.skip>
-        <central.skipPublishing>false</central.skipPublishing>
     </properties>
 
     <dependencies>
