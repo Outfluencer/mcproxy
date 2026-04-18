@@ -228,7 +228,6 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        boolean has = getName().equalsIgnoreCase("Outfluencer") || getName().equalsIgnoreCase("Riesenrad") || getName().equalsIgnoreCase("EnzaXD");
-        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, has)).hasPermission();
+        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, false)).hasPermission();
     }
 }
