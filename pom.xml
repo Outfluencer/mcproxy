@@ -283,6 +283,27 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Release via Central Portal Publisher API (vs. the snapshot URL
+             in distributionManagement). Activated by the release workflow. -->
+        <profile>
+            <id>central-portal</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                            <skipPublishing>${maven.deploy.skip}</skipPublishing>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
