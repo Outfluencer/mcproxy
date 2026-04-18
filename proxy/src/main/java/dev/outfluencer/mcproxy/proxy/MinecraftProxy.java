@@ -37,6 +37,8 @@ import lombok.Locked;
 import lombok.SneakyThrows;
 import net.lenni0451.mcstructs.text.TextComponent;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +47,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 public final class MinecraftProxy extends ProxyServer {
@@ -200,8 +203,26 @@ public final class MinecraftProxy extends ProxyServer {
         return "mcproxy";
     }
 
+    private static final String VERSION = loadVersion();
+
     public String getVersion() {
-        return "0.1";
+        return VERSION;
+    }
+
+    private static String loadVersion() {
+        try {
+            String classResource = MinecraftProxy.class.getName().replace('.', '/') + ".class";
+            URL classUrl = MinecraftProxy.class.getClassLoader().getResource(classResource);
+            if (classUrl == null || !classUrl.getProtocol().equals("jar")) return "custom";
+            String jarUrl = classUrl.toString();
+            URL manifestUrl = new URL(jarUrl.substring(0, jarUrl.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF");
+            try (InputStream in = manifestUrl.openStream()) {
+                String hash = new Manifest(in).getMainAttributes().getValue("Git-Commit");
+                return (hash == null || hash.isEmpty()) ? "custom" : hash;
+            }
+        } catch (Exception ex) {
+            return "custom";
+        }
     }
 }
 
