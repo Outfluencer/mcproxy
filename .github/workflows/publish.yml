@@ -1,4 +1,4 @@
-name: Publish SNAPSHOT to Maven Central
+name: Compile and Publish
 
 on:
   push:
