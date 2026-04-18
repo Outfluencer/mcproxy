@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundRegistryDataPacket extends Packet<ClientboundConfigurationPacketListener> {
 
     private String registryId;

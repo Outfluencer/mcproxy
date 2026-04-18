@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.sample;
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
 import dev.outfluencer.mcproxy.api.events.ProxyMotdEvent;
+import dev.outfluencer.mcproxy.api.events.ServerKickPlayerEvent;
 import dev.outfluencer.mcproxy.api.events.unsafe.ChannelInitializedEvent;
 import dev.outfluencer.mcproxy.api.plugin.Plugin;
 import dev.outfluencer.mcproxy.api.util.ComponentBuilder;
@@ -15,26 +16,24 @@ import java.awt.*;
 
 public class SamplePlugin extends Plugin {
 
+    public static final TextComponent MOTD = ComponentBuilder.gradient("mcproxy test server", Color.red, Color.blue).bold().build();
+
     @Override
     public void onEnable() {
         getLogger().info("Sample plugin enabled!");
         ProxyServer.getInstance().getEventManager().register(this);
     }
-
-    @EventHandler
-    public void onChannelInit(ChannelInitializedEvent event) {
-        getLogger().info(String.valueOf(event));
-    }
-
-    @EventHandler
-    public void onCompression(CompressionChangeEvent event) {
-        getLogger().info(String.valueOf(event));
-    }
-
     @EventHandler
     public void onMotd(ProxyMotdEvent event) {
-        event.getServerStatus().setDescription(ComponentBuilder.gradient("mcproxy server", Color.red, Color.blue).bold().build());
+        event.getServerStatus().setDescription(MOTD);
     }
+
+    @EventHandler
+    public void onPlayerKick(ServerKickPlayerEvent event) {
+        event.getPlayer().sendMessage(event.getReason());
+        event.setCancelled(true);
+    }
+
 
     @Override
     public void onDisable() {

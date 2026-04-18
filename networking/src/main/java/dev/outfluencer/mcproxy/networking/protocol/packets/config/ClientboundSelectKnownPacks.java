@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.util.List;
 @Setter
 @ToString
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundSelectKnownPacks extends Packet<ClientboundConfigurationPacketListener> {
 
     private List<KnownPack> knownPacks;

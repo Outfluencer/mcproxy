@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.login;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ServerboundLoginEncryptionResponsePacket extends Packet<ServerboundLoginPacketListener> {
 
     private byte[] sharedSecret;

@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.login;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ServerboundHelloPacket extends Packet<ServerboundLoginPacketListener> {
 
     private String name;
@@ -35,3 +37,4 @@ public class ServerboundHelloPacket extends Packet<ServerboundLoginPacketListene
         return listener.handle(this);
     }
 }
+

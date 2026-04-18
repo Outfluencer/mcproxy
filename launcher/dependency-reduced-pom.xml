@@ -17,19 +17,23 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
             <configuration>
-              <createDependencyReducedPom>true</createDependencyReducedPom>
-              <shadedArtifactAttached>false</shadedArtifactAttached>
               <transformers>
                 <transformer>
                   <mainClass>dev.outfluencer.mcproxy.launcher.Launcher</mainClass>
+                  <manifestEntries>
+                    <Git-Commit>${git.commit.id.abbrev}</Git-Commit>
+                  </manifestEntries>
                 </transformer>
                 <transformer />
               </transformers>

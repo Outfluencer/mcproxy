@@ -36,6 +36,7 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
             return DROP;
         }
         getServer().getConfigurationTracker().getPendingKnownPacks().decrement();
+        player.setLastClientKnownPacks(serverboundSelectKnownPacks);
         return PASS;
     }
 }

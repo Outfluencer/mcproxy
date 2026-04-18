@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import java.util.List;
 @Setter
 @ToString
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ServerboundSelectKnownPacks extends Packet<ServerboundConfigurationPacketListener> {
 
     private List<KnownPack> knownPacks;

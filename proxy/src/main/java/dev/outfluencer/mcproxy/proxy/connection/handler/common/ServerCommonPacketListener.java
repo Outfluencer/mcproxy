@@ -24,7 +24,6 @@ public class ServerCommonPacketListener implements ClientboundCommonPacketListen
     public boolean handle(ClientboundCommonDisconnectPacket packet) {
         try {
             var event = ProxyServer.getInstance().getEventManager().fire(new ServerKickPlayerEvent(player, server, packet.getReason()));
-            event.setCancelled(true);
             if (event.isCancelled()) {
                 if (event.getFallbackServer() != null) {
                     server.setDiscarded(true);

@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.common;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.util.Map;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundUpdateTagsPacket extends Packet<ClientboundCommonPacketListener> {
 
     private Map<String, Map<String, int[]>> tags;

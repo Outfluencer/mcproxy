@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.Util;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import net.lenni0451.mcstructs.text.TextComponent;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundLoginDisconnectPacket extends Packet<ClientboundLoginPacketListener> {
 
     private TextComponent reason;

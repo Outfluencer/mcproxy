@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.ServerStatus;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundStatusResponsePacket extends Packet<ClientboundStatusPacketListener> {
 
     private ServerStatus response;

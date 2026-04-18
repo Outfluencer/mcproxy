@@ -11,6 +11,8 @@ import dev.outfluencer.mcproxy.networking.protocol.DecodedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCommonDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundClientInformationPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
+import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
@@ -48,8 +50,10 @@ public class PlayerImpl implements Player {
     private List<ServerInfo> fallbackConnects;
     private LoginResult loginResult;
     private ServerboundClientInformationPacket settings;
-    @Getter
+    @NonNull
     private ConfigurationTracker configurationTracker = new ConfigurationTracker();
+    private ClientboundSelectKnownPacks lastServerKnownPacks;
+    private ServerboundSelectKnownPacks lastClientKnownPacks;
 
     @Data
     public static class ConfigurationTracker {
@@ -166,7 +170,6 @@ public class PlayerImpl implements Player {
         }
     }
 
-
     public void sendDecodedPacket(DecodedPacket decodedPacket) {
         connection.sendDecodedPacket(decodedPacket);
     }
@@ -228,6 +231,6 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, false)).hasPermission();
+        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, false )).hasPermission();
     }
 }

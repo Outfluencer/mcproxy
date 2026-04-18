@@ -3,6 +3,7 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.game;
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import net.lenni0451.mcstructs.text.TextComponent;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundSystemChatPacket extends Packet<ClientboundGamePacketListener> {
 
     private TextComponent message;

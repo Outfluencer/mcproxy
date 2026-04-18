@@ -7,10 +7,13 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundCon
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundRegistryDataPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
+import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
+import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.common.ServerCommonPacketListener;
 import dev.outfluencer.mcproxy.proxy.connection.handler.game.ServerGamePacketListener;
+import dev.outfluencer.mcproxy.proxy.connection.handler.login.ServerLoginPacketListener;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -33,19 +36,32 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
 
     @Override
     public void handle(DecodedPacket decodedPacket) {
-        player.sendDecodedPacket(decodedPacket);
+        MinecraftProxy.getLogger().info(Packet.readVarInt(decodedPacket.byteBuf().copy()) + " lol");
+        if (playerIsConfiguring()) {
+            player.sendDecodedPacket(decodedPacket);
+        }
     }
 
     @Override
     public boolean handle(ClientboundFinishConfigurationPacket packet) {
-        server.getConfigurationTracker().setPendingLoginAck(true);
-        // send all possibly config state breaking packets at the same time.
-        while (!registryAccumulationQueue.isEmpty()) {
-            player.sendPacket(registryAccumulationQueue.poll());
-        }
         server.getConnection().setPacketListener(new ServerGamePacketListener(server));
-        player.getConfigurationTracker().setPendingFinishConfiguration(true);
-        return PASS;
+        if (playerIsConfiguring()) {
+            server.getConfigurationTracker().setPendingLoginAck(true);
+            // send all possibly config state breaking packets at the same time.
+            while (!registryAccumulationQueue.isEmpty()) {
+                player.sendPacket(registryAccumulationQueue.poll());
+            }
+            player.getConfigurationTracker().setPendingFinishConfiguration(true);
+            player.sendPacket(packet);
+        } else {
+            server.sendPacket(new ServerboundFinishConfigurationPacket());
+            if(player.getSettings() != null) {
+                server.sendPacket(player.getSettings());
+            }
+            System.out.println("LOL");
+        }
+        return DROP;
+
     }
 
     @Override
@@ -62,7 +78,30 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
 
     @Override
     public boolean handle(ClientboundSelectKnownPacks clientboundSelectKnownPacks) {
-        server.getConfigurationTracker().getPendingKnownPacks().increment();
-        return PASS;
+        if (playerIsConfiguring()) {
+            player.setLastServerKnownPacks(clientboundSelectKnownPacks);
+            player.sendPacket(clientboundSelectKnownPacks);
+            server.getConfigurationTracker().getPendingKnownPacks().increment();
+        } else {
+            // same serve known packs and cached player response
+            System.out.println((player.getLastClientKnownPacks() != null) + " " + clientboundSelectKnownPacks.equals(player.getLastServerKnownPacks()));
+            if (player.getLastClientKnownPacks() != null && clientboundSelectKnownPacks.equals(player.getLastServerKnownPacks())) {
+                server.sendPacket(player.getLastClientKnownPacks());
+            } else {
+                // player needs to be configured
+                onReconfigureRequired();
+                player.sendPacket(clientboundSelectKnownPacks);
+            }
+        }
+        return DROP;
+    }
+
+    public boolean playerIsConfiguring() {
+        return player.getEncoderProtocol() == Protocol.CONFIG;
+    }
+
+
+    public void onReconfigureRequired() {
+        ServerLoginPacketListener.switchPlayerToConfig(player, server);
     }
 }

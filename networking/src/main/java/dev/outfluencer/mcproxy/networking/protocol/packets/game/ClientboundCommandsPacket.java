@@ -24,6 +24,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.MinecraftVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundCommandsPacket extends Packet<ClientboundGamePacketListener> {
 
     private static final int MASK_NODE_TYPE = 0x03;

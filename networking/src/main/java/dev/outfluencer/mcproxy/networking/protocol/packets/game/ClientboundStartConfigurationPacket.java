@@ -4,6 +4,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ClientboundStartConfigurationPacket extends Packet<ClientboundGamePacketListener> {
     @Override
     public void read(ByteBuf byteBuf, int version) {

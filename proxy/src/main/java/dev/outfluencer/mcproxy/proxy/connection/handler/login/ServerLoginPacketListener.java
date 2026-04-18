@@ -101,7 +101,14 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         Protocol playerEncoderProtocol = player.getEncoderProtocol();
         if (playerEncoderProtocol == Protocol.LOGIN) {
             player.sendPacket(packet);
+        } else if(playerEncoderProtocol == Protocol.CONFIG) {
+            server.sendPacket(new ServerboundLoginAcknowledgedPacket());
         } else if (playerEncoderProtocol == Protocol.GAME) {
+            server.sendPacket(server.getEncoderProtocol() == Protocol.LOGIN ? new ServerboundLoginAcknowledgedPacket() : packet);
+        }
+
+        /*
+        else if (playerEncoderProtocol == Protocol.GAME) {
             if (player.isBundling()) {
                 player.toggleBundle();
                 player.sendPacket(new ClientboundBundleDelimiterPacket());
@@ -112,6 +119,28 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
             assert playerEncoderProtocol == Protocol.CONFIG;
             server.sendPacket(new ServerboundLoginAcknowledgedPacket());
         }
+         */
+
+        //switchPlayerToConfig(player, server);
+    }
+
+    public static void switchPlayerToConfig(PlayerImpl player, ServerImpl server) {
+        Protocol playerEncoderProtocol = player.getEncoderProtocol();
+        if (playerEncoderProtocol == Protocol.GAME) {
+            switchGameToConfig(player, server);
+        }
+        throw new UnsupportedOperationException(playerEncoderProtocol + "");
+    }
+
+    public static void switchGameToConfig(PlayerImpl player, ServerImpl server) {
+        Protocol playerEncoderProtocol = player.getEncoderProtocol();
+        assert playerEncoderProtocol == Protocol.GAME;
+        if (player.isBundling()) {
+            player.toggleBundle();
+            player.sendPacket(new ClientboundBundleDelimiterPacket());
+        }
+        player.sendPacket(new ClientboundStartConfigurationPacket());
+        server.getConfigurationTracker().setPendingStartConfigAck(true);
     }
 
     @Override
