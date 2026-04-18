@@ -39,7 +39,7 @@ public class PacketDecoder extends MessageToMessageDecoder<ByteBuf> {
                     throw new DecoderException("Error reading " + packet.getClass().getSimpleName() + " (" + packetId + ") in " + registry.getProtocol(), e);
                 }
                 if (in.isReadable()) {
-                    throw new DecoderException("Packet did not read to end");
+                    throw new DecoderException("Packet did not read to end: " + in.readableBytes());
                 }
             } else {
                 in.skipBytes(in.readableBytes());

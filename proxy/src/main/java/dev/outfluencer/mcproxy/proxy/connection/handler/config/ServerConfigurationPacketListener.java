@@ -9,7 +9,6 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundReg
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
-import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import dev.outfluencer.mcproxy.proxy.connection.ServerImpl;
 import dev.outfluencer.mcproxy.proxy.connection.handler.common.ServerCommonPacketListener;
 import dev.outfluencer.mcproxy.proxy.connection.handler.game.ServerGamePacketListener;
@@ -36,7 +35,6 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
 
     @Override
     public void handle(DecodedPacket decodedPacket) {
-        MinecraftProxy.getLogger().info(Packet.readVarInt(decodedPacket.byteBuf().copy()) + " lol");
         if (playerIsConfiguring()) {
             player.sendDecodedPacket(decodedPacket);
         }
@@ -55,10 +53,9 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
             player.sendPacket(packet);
         } else {
             server.sendPacket(new ServerboundFinishConfigurationPacket());
-            if(player.getSettings() != null) {
+            if (player.getSettings() != null) {
                 server.sendPacket(player.getSettings());
             }
-            System.out.println("LOL");
         }
         return DROP;
 
@@ -84,7 +81,6 @@ public class ServerConfigurationPacketListener extends ServerCommonPacketListene
             server.getConfigurationTracker().getPendingKnownPacks().increment();
         } else {
             // same serve known packs and cached player response
-            System.out.println((player.getLastClientKnownPacks() != null) + " " + clientboundSelectKnownPacks.equals(player.getLastServerKnownPacks()));
             if (player.getLastClientKnownPacks() != null && clientboundSelectKnownPacks.equals(player.getLastServerKnownPacks())) {
                 server.sendPacket(player.getLastClientKnownPacks());
             } else {

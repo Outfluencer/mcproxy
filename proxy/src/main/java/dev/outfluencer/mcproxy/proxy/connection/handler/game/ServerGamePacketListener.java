@@ -13,6 +13,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundComma
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandsPacket.CompletionProviders;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandSuggestionsPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundGamePacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundRespawnPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
@@ -111,6 +112,11 @@ public class ServerGamePacketListener extends ServerCommonPacketListener impleme
 
     @Override
     public boolean handle(ClientboundCommandSuggestionsPacket packet) {
+        return PASS;
+    }
+
+    @Override
+    public boolean handle(ClientboundRespawnPacket clientboundRespawnDelimiterPacket) {
         return PASS;
     }
 
