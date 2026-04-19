@@ -181,13 +181,15 @@ public enum Protocol {
             clientbound.registerPacket(
                 ClientboundLoginPacket.class,
                 ClientboundLoginPacket::new,
-                map(MinecraftVersion.V1_21_11, 0x30)
+                map(MinecraftVersion.V1_21_11, 0x30),
+                map(MinecraftVersion.V26_1, 0x31)
             );
 
             clientbound.registerPacket(
                 ClientboundRespawnPacket.class,
                 ClientboundRespawnPacket::new,
-                map(MinecraftVersion.V1_21_11, 0x50)
+                map(MinecraftVersion.V1_21_11, 0x50),
+                map(MinecraftVersion.V26_1, 0x52)
             );
 
             clientbound.registerPacket(

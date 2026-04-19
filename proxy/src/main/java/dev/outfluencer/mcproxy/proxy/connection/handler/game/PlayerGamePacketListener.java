@@ -23,11 +23,21 @@ public class PlayerGamePacketListener extends PlayerCommonPacketListener impleme
 
     @Override
     public boolean handle(ServerboundConfigurationAcknowledgedPacket packet) {
+        if (player.getSwitchGameToConfigFuture() != null) {
+            player.getSwitchGameToConfigFuture().complete(null);
+        }
+
         player.getConnection().setPacketListener(new PlayerConfigurationPacketListener(player));
         if (!getServer().getConfigurationTracker().isPendingStartConfigAck()) {
             return DROP;
         }
-        getServer().sendPacket(getServer().getEncoderProtocol() == Protocol.LOGIN ? new ServerboundLoginAcknowledgedPacket() : packet);
+        getServer().getConfigurationTracker().setPendingStartConfigAck(false);
+        Protocol serverEncoder = getServer().getEncoderProtocol();
+        if (serverEncoder == Protocol.LOGIN) {
+            getServer().sendPacket(new ServerboundLoginAcknowledgedPacket());
+        } else if (serverEncoder == Protocol.GAME) {
+            getServer().sendPacket(packet);
+        }
         return DROP;
     }
 

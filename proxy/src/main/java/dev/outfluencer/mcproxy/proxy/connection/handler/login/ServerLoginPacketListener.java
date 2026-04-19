@@ -2,8 +2,6 @@ package dev.outfluencer.mcproxy.proxy.connection.handler.login;
 
 import dev.outfluencer.mcproxy.api.events.CompressionChangeEvent;
 import dev.outfluencer.mcproxy.networking.Util;
-import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginCompressionPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
@@ -11,7 +9,6 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLogi
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginFinishedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundHelloPacket;
-import dev.outfluencer.mcproxy.networking.protocol.packets.login.ServerboundLoginAcknowledgedPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import dev.outfluencer.mcproxy.proxy.config.ProxyConfig;
@@ -90,57 +87,13 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
         if (!player.isConnected()) {
             return;
         }
-        if(player.getConfigurationTracker().isPendingFinishConfiguration()) {
-            player.getConfigurationTracker().getSentFinishConfiguration().thenAccept(_ -> updatePlayerServer(packet));
+        if (player.getSwitchConfigToGameFuture() != null) {
+            player.getSwitchConfigToGameFuture().thenAccept(_ -> updatePlayerServer(packet));
             return;
         }
-
-        server.getConnection().setPacketListener(new ServerConfigurationPacketListener(server));
-        player.setServer(server);
-
-        Protocol playerEncoderProtocol = player.getEncoderProtocol();
-        if (playerEncoderProtocol == Protocol.LOGIN) {
-            player.sendPacket(packet);
-        } else if(playerEncoderProtocol == Protocol.CONFIG) {
-            server.sendPacket(new ServerboundLoginAcknowledgedPacket());
-        } else if (playerEncoderProtocol == Protocol.GAME) {
-            server.sendPacket(server.getEncoderProtocol() == Protocol.LOGIN ? new ServerboundLoginAcknowledgedPacket() : packet);
-        }
-
-        /*
-        else if (playerEncoderProtocol == Protocol.GAME) {
-            if (player.isBundling()) {
-                player.toggleBundle();
-                player.sendPacket(new ClientboundBundleDelimiterPacket());
-            }
-            player.sendPacket(new ClientboundStartConfigurationPacket());
-            server.getConfigurationTracker().setPendingStartConfigAck(true);
-        } else {
-            assert playerEncoderProtocol == Protocol.CONFIG;
-            server.sendPacket(new ServerboundLoginAcknowledgedPacket());
-        }
-         */
-
-        //switchPlayerToConfig(player, server);
-    }
-
-    public static void switchPlayerToConfig(PlayerImpl player, ServerImpl server) {
-        Protocol playerEncoderProtocol = player.getEncoderProtocol();
-        if (playerEncoderProtocol == Protocol.GAME) {
-            switchGameToConfig(player, server);
-        }
-        throw new UnsupportedOperationException(playerEncoderProtocol + "");
-    }
-
-    public static void switchGameToConfig(PlayerImpl player, ServerImpl server) {
-        Protocol playerEncoderProtocol = player.getEncoderProtocol();
-        assert playerEncoderProtocol == Protocol.GAME;
-        if (player.isBundling()) {
-            player.toggleBundle();
-            player.sendPacket(new ClientboundBundleDelimiterPacket());
-        }
-        player.sendPacket(new ClientboundStartConfigurationPacket());
-        server.getConfigurationTracker().setPendingStartConfigAck(true);
+        var listener = ServerConfigurationPacketListener.create(server);
+        listener.transferPlayer(packet);
+        server.getConnection().setPacketListener(listener);
     }
 
     @Override
@@ -151,7 +104,7 @@ public class ServerLoginPacketListener implements ClientboundLoginPacketListener
 
     @Override
     public void onDisconnect() {
-        if(server.isDiscarded()) {
+        if (server.isDiscarded()) {
             return;
         }
         if (!player.isConnectedToServer()) {

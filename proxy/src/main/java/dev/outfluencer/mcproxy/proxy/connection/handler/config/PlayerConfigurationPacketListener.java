@@ -1,6 +1,5 @@
 package dev.outfluencer.mcproxy.proxy.connection.handler.config;
 
-import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundConfigurationPacketListener;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundFinishConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
@@ -18,13 +17,15 @@ public class PlayerConfigurationPacketListener extends PlayerCommonPacketListene
 
     @Override
     public boolean handle(ServerboundFinishConfigurationPacket packet) {
-        player.getConfigurationTracker().setPendingFinishConfiguration(false);
+        if (player.getSwitchConfigToGameFuture() != null) {
+            player.getSwitchConfigToGameFuture().complete(null);
+        }
         player.getConnection().setPacketListener(new PlayerGamePacketListener(player));
         if (!getServer().getConfigurationTracker().isPendingLoginAck()) {
             return DROP;
         }
         getServer().getConfigurationTracker().setPendingLoginAck(false);
-        if(player.getSettings() != null) {
+        if (player.getSettings() != null) {
             getServer().sendPacket(player.getSettings());
         }
         return PASS;

@@ -1,6 +1,5 @@
 package dev.outfluencer.mcproxy.proxy.connection;
 
-import com.google.common.base.Preconditions;
 import dev.outfluencer.mcproxy.api.ProxyServer;
 import dev.outfluencer.mcproxy.api.ServerInfo;
 import dev.outfluencer.mcproxy.api.connection.Player;
@@ -13,13 +12,14 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.common.ClientboundCom
 import dev.outfluencer.mcproxy.networking.protocol.packets.common.ServerboundClientInformationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ClientboundSelectKnownPacks;
 import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSelectKnownPacks;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.handshake.ServerboundHandshakePacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.login.ClientboundLoginDisconnectPacket;
 import dev.outfluencer.mcproxy.networking.protocol.registry.Protocol;
 import dev.outfluencer.mcproxy.proxy.MinecraftProxy;
 import io.netty.channel.Channel;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -50,26 +50,54 @@ public class PlayerImpl implements Player {
     private List<ServerInfo> fallbackConnects;
     private LoginResult loginResult;
     private ServerboundClientInformationPacket settings;
-    @NonNull
-    private ConfigurationTracker configurationTracker = new ConfigurationTracker();
     private ClientboundSelectKnownPacks lastServerKnownPacks;
     private ServerboundSelectKnownPacks lastClientKnownPacks;
+    private Object[] lastRegistryData = new Object[0];
     private boolean rewriteLogin;
 
-    @Data
-    public static class ConfigurationTracker {
-        private boolean pendingFinishConfiguration = false;
-        private CompletableFuture<Void> sentFinishConfiguration = CompletableFuture.completedFuture(null);
+    private CompletableFuture<Void> switchConfigToGameFuture;
 
-        public void setPendingFinishConfiguration(boolean value) {
-            Preconditions.checkState(pendingFinishConfiguration != value);
-            this.pendingFinishConfiguration = value;
-            if(value) {
-                sentFinishConfiguration = new CompletableFuture<>();
-            } else {
-                sentFinishConfiguration.complete(null);
-            }
+    public void transitionToGame(ServerImpl server, Runnable initSwitch) {
+        Protocol playerEncoderProtocol = getEncoderProtocol();
+        if (playerEncoderProtocol == Protocol.GAME) {
+            CompletableFuture.completedFuture(null);
+            return;
         }
+
+        if (switchConfigToGameFuture != null) {
+            return;
+        }
+
+        assert playerEncoderProtocol == Protocol.CONFIG;
+
+        initSwitch.run();
+        switchConfigToGameFuture = new CompletableFuture<>();
+        switchConfigToGameFuture.thenRun(() -> switchConfigToGameFuture = null);
+    }
+
+    private CompletableFuture<Void> switchGameToConfigFuture;
+
+    public CompletableFuture<Void> transitionToConfig(ServerImpl server) {
+        Protocol playerEncoderProtocol = getEncoderProtocol();
+        if (playerEncoderProtocol == Protocol.CONFIG) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        if (switchGameToConfigFuture != null) {
+            return switchGameToConfigFuture;
+        }
+
+        assert playerEncoderProtocol == Protocol.GAME;
+        if (isBundling()) {
+            toggleBundle();
+            sendPacket(new ClientboundBundleDelimiterPacket());
+        }
+
+        sendPacket(new ClientboundStartConfigurationPacket());
+        server.getConfigurationTracker().setPendingStartConfigAck(true);
+        switchGameToConfigFuture = new CompletableFuture<>();
+        switchGameToConfigFuture.thenRun(() -> switchGameToConfigFuture = null);
+        return switchGameToConfigFuture;
     }
 
 
@@ -98,7 +126,7 @@ public class PlayerImpl implements Player {
         if (fallbackConnects == null || fallbackConnects.isEmpty()) {
             //disconnect("No fallback server found");
             connection.getChannel().eventLoop().schedule(() -> {
-                if(isConnected() && !isConnectedToServer()) {
+                if (isConnected() && !isConnectedToServer()) {
                     sendMessage(ComponentBuilder.gradient("All fallback servers went down, waiting for fallback server to start!", new Color(168, 50, 88), new Color(255, 13, 0)).build());
                     fallback();
                 }
@@ -232,6 +260,6 @@ public class PlayerImpl implements Player {
 
     @Override
     public boolean hasPermission(String permission) {
-        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, false )).hasPermission();
+        return ProxyServer.getInstance().getEventManager().fire(new PermissionCheckEvent(this, permission, false)).hasPermission();
     }
 }
