@@ -13,6 +13,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundComma
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandsPacket.CompletionProviders;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandSuggestionsPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundGamePacketListener;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundLoginPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundRespawnPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
@@ -117,6 +118,31 @@ public class ServerGamePacketListener extends ServerCommonPacketListener impleme
 
     @Override
     public boolean handle(ClientboundRespawnPacket clientboundRespawnDelimiterPacket) {
+        return PASS;
+    }
+
+    @Override
+    public boolean handle(ClientboundLoginPacket packet) {
+        if(player.isRewriteLogin()) {
+            player.sendPacket(packet);
+            player.sendPacket(new ClientboundRespawnPacket(
+                packet.getDimensionType(),
+                packet.getDimensionId(),
+                packet.getSeedHash(),
+                packet.getGamemode(),
+                packet.getPreviousGamemode(),
+                packet.isDebug(),
+                packet.isFlat(),
+                packet.isHasDeath(),
+                packet.getDeathDimension(),
+                packet.getDeathLocation(),
+                packet.getPortalCooldown(),
+                packet.getSeaLevel(),
+                0
+            ));
+            return DROP;
+        }
+        player.setRewriteLogin(true);
         return PASS;
     }
 

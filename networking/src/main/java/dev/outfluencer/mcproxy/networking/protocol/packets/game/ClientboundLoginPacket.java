@@ -2,7 +2,6 @@ package dev.outfluencer.mcproxy.networking.protocol.packets.game;
 
 import dev.outfluencer.mcproxy.networking.protocol.packets.Packet;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,9 +13,17 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@AllArgsConstructor
-public class ClientboundRespawnPacket extends Packet<ClientboundGamePacketListener> {
+public class ClientboundLoginPacket extends Packet<ClientboundGamePacketListener> {
 
+    private int entityId;
+    private boolean hardcore;
+    private String[] dimensions;
+    private int maxPlayers;
+    private int viewDistance;
+    private int simulationDistance;
+    private boolean reducedDebugInfo;
+    private boolean enableRespawnScreen;
+    private boolean doLimitedCrafting;
     private int dimensionType;
     private String dimensionId;
     private long seedHash;
@@ -31,11 +38,23 @@ public class ClientboundRespawnPacket extends Packet<ClientboundGamePacketListen
 
     private int portalCooldown;
     private int seaLevel;
-    private int keepData;
-
+    private boolean enforcesSecureChat;
 
     @Override
     public void read(ByteBuf byteBuf, int version) {
+        entityId = byteBuf.readInt();
+        hardcore = byteBuf.readBoolean();
+        int dimensionCount = readVarInt(byteBuf);
+        dimensions = new String[dimensionCount];
+        for (int i = 0; i < dimensionCount; i++) {
+            dimensions[i] = readString(byteBuf);
+        }
+        maxPlayers = readVarInt(byteBuf);
+        viewDistance = readVarInt(byteBuf);
+        simulationDistance = readVarInt(byteBuf);
+        reducedDebugInfo = byteBuf.readBoolean();
+        enableRespawnScreen = byteBuf.readBoolean();
+        doLimitedCrafting = byteBuf.readBoolean();
         dimensionType = readVarInt(byteBuf);
         dimensionId = readString(byteBuf);
         seedHash = byteBuf.readLong();
@@ -44,17 +63,29 @@ public class ClientboundRespawnPacket extends Packet<ClientboundGamePacketListen
         debug = byteBuf.readBoolean();
         flat = byteBuf.readBoolean();
         hasDeath = byteBuf.readBoolean();
-        if(hasDeath) {
+        if (hasDeath) {
             deathDimension = readString(byteBuf);
             deathLocation = byteBuf.readLong();
         }
         portalCooldown = readVarInt(byteBuf);
         seaLevel = readVarInt(byteBuf);
-        keepData = byteBuf.readByte();
+        enforcesSecureChat = byteBuf.readBoolean();
     }
 
     @Override
     public void write(ByteBuf byteBuf, int version) {
+        byteBuf.writeInt(entityId);
+        byteBuf.writeBoolean(hardcore);
+        writeVarInt(dimensions.length, byteBuf);
+        for (String dimension : dimensions) {
+            writeString(dimension, byteBuf);
+        }
+        writeVarInt(maxPlayers, byteBuf);
+        writeVarInt(viewDistance, byteBuf);
+        writeVarInt(simulationDistance, byteBuf);
+        byteBuf.writeBoolean(reducedDebugInfo);
+        byteBuf.writeBoolean(enableRespawnScreen);
+        byteBuf.writeBoolean(doLimitedCrafting);
         writeVarInt(dimensionType, byteBuf);
         writeString(dimensionId, byteBuf);
         byteBuf.writeLong(seedHash);
@@ -63,13 +94,13 @@ public class ClientboundRespawnPacket extends Packet<ClientboundGamePacketListen
         byteBuf.writeBoolean(debug);
         byteBuf.writeBoolean(flat);
         byteBuf.writeBoolean(hasDeath);
-        if(hasDeath) {
+        if (hasDeath) {
             writeString(deathDimension, byteBuf);
             byteBuf.writeLong(deathLocation);
         }
         writeVarInt(portalCooldown, byteBuf);
         writeVarInt(seaLevel, byteBuf);
-        byteBuf.writeByte(keepData);
+        byteBuf.writeBoolean(enforcesSecureChat);
     }
 
     @Override

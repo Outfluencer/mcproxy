@@ -14,4 +14,6 @@ public interface ClientboundGamePacketListener extends PacketListener {
     boolean handle(ClientboundCommandSuggestionsPacket clientboundCommandSuggestionsPacket);
 
     boolean handle(ClientboundRespawnPacket clientboundRespawnDelimiterPacket);
+
+    boolean handle(ClientboundLoginPacket clientboundLoginPacket);
 }

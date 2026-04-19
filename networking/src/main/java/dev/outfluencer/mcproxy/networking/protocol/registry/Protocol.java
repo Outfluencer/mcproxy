@@ -11,6 +11,7 @@ import dev.outfluencer.mcproxy.networking.protocol.packets.config.ServerboundSel
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundBundleDelimiterPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandsPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundCommandSuggestionsPacket;
+import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundLoginPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundRespawnPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundStartConfigurationPacket;
 import dev.outfluencer.mcproxy.networking.protocol.packets.game.ClientboundSystemChatPacket;
@@ -175,6 +176,12 @@ public enum Protocol {
                 ClientboundCommonDisconnectPacket.class,
                 ClientboundCommonDisconnectPacket::new,
                 map(MinecraftVersion.V1_21_11, 0x20)
+            );
+
+            clientbound.registerPacket(
+                ClientboundLoginPacket.class,
+                ClientboundLoginPacket::new,
+                map(MinecraftVersion.V1_21_11, 0x30)
             );
 
             clientbound.registerPacket(

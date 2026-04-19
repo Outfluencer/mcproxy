@@ -54,6 +54,7 @@ public class PlayerImpl implements Player {
     private ConfigurationTracker configurationTracker = new ConfigurationTracker();
     private ClientboundSelectKnownPacks lastServerKnownPacks;
     private ServerboundSelectKnownPacks lastClientKnownPacks;
+    private boolean rewriteLogin;
 
     @Data
     public static class ConfigurationTracker {
